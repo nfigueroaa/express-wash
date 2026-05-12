@@ -24,6 +24,10 @@ jobs:
       - name: Configure Docker authentication
         run: gcloud auth configure-docker southamerica-west1-docker.pkg.dev
 
+      # Desactivar BuildKit para usar docker build tradicional
+      - name: Disable Docker BuildKit
+        run: echo "DOCKER_BUILDKIT=0" >> $GITHUB_ENV
+
       # Construir imagen de Docker
       - name: Build Docker image
         run: |
@@ -34,9 +38,8 @@ jobs:
             --build-arg NEXT_PUBLIC_EMAILJS_SERVICE_ID=${{ secrets.NEXT_PUBLIC_EMAILJS_SERVICE_ID }} \
             --build-arg NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=${{ secrets.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID }} \
             --build-arg NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=${{ secrets.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY }} \
-            --tag ${{ env.IMAGE }}:${{ github.sha }} \
-            --tag ${{ env.IMAGE }}:latest \
-            --file Dockerfile \
+            -t ${{ env.IMAGE }}:${{ github.sha }} \
+            -t ${{ env.IMAGE }}:latest \
             .
 
       - name: Push Docker image
