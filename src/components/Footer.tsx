@@ -39,8 +39,11 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="text-center text-gray-700 text-xs mt-8 pt-6 border-t border-gray-900">
-        © {new Date().getFullYear()} Express Delivery Wash · Santiago, Chile
+      <div className="text-center text-gray-700 text-xs mt-8 pt-6 border-t border-gray-900 space-y-2">
+        <p>© {new Date().getFullYear()} Express Delivery Wash · Santiago, Chile</p>
+        <p className="text-gray-600">
+          Desarrollada por <span className="font-semibold text-gray-400">Nelson Figueroa Albarrán</span> · {new Date().getFullYear()}
+        </p>
       </div>
     </footer>
   );

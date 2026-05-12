@@ -317,10 +317,12 @@ Ver [ROADMAP.md](ROADMAP.md) para detalles completos de todas las 13 mejoras pla
 
 ## 🙏 Créditos
 
-- **Desarrollo:** [Claude Code](https://claude.ai/code) (asistente IA)
-- **Stack:** Next.js, TypeScript, Tailwind, Firebase, Anthropic
-- **Maps:** [OpenStreetMap](https://www.openstreetmap.org/), [Nominatim](https://nominatim.org/)
+- **Desarrollada por:** Nelson Figueroa Albarrán — 2026
+- **Asistencia IA:** [Claude Code](https://claude.ai/code) (Anthropic)
+- **Stack:** Next.js 14, TypeScript, Tailwind CSS, Firebase Firestore, Anthropic Claude
+- **Mapas:** [OpenStreetMap](https://www.openstreetmap.org/), [Nominatim](https://nominatim.org/), [Leaflet](https://leafletjs.com/)
 - **Componentes UI:** [shadcn/ui](https://ui.shadcn.com/), [Radix UI](https://www.radix-ui.com/)
+- **Notificaciones:** [EmailJS](https://www.emailjs.com/)
 - **Alojamiento:** [Google Cloud Run](https://cloud.google.com/run)
 
 ---
