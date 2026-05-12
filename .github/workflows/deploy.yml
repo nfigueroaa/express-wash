@@ -33,17 +33,7 @@ jobs:
           NEXT_PUBLIC_EMAILJS_SERVICE_ID: ${{ secrets.NEXT_PUBLIC_EMAILJS_SERVICE_ID }}
           NEXT_PUBLIC_EMAILJS_TEMPLATE_ID: ${{ secrets.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID }}
           NEXT_PUBLIC_EMAILJS_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY }}
-        run: |
-          docker build \
-            --build-arg NEXT_PUBLIC_FIREBASE_CONFIG=$NEXT_PUBLIC_FIREBASE_CONFIG \
-            --build-arg NEXT_PUBLIC_BASE_LAT=$NEXT_PUBLIC_BASE_LAT \
-            --build-arg NEXT_PUBLIC_BASE_LON=$NEXT_PUBLIC_BASE_LON \
-            --build-arg NEXT_PUBLIC_EMAILJS_SERVICE_ID=$NEXT_PUBLIC_EMAILJS_SERVICE_ID \
-            --build-arg NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=$NEXT_PUBLIC_EMAILJS_TEMPLATE_ID \
-            --build-arg NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=$NEXT_PUBLIC_EMAILJS_PUBLIC_KEY \
-            -t ${{ env.IMAGE }}:${{ github.sha }} \
-            -t ${{ env.IMAGE }}:latest \
-            .
+        run: docker build --build-arg NEXT_PUBLIC_FIREBASE_CONFIG=$NEXT_PUBLIC_FIREBASE_CONFIG --build-arg NEXT_PUBLIC_BASE_LAT=$NEXT_PUBLIC_BASE_LAT --build-arg NEXT_PUBLIC_BASE_LON=$NEXT_PUBLIC_BASE_LON --build-arg NEXT_PUBLIC_EMAILJS_SERVICE_ID=$NEXT_PUBLIC_EMAILJS_SERVICE_ID --build-arg NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=$NEXT_PUBLIC_EMAILJS_TEMPLATE_ID --build-arg NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=$NEXT_PUBLIC_EMAILJS_PUBLIC_KEY -t ${{ env.IMAGE }}:${{ github.sha }} -t ${{ env.IMAGE }}:latest .
 
       - name: Push Docker image
         run: |
