@@ -27,15 +27,16 @@ jobs:
       # Construir imagen de Docker
       - name: Build Docker image
         run: |
-          /usr/bin/docker build \
+          docker build \
             --build-arg NEXT_PUBLIC_FIREBASE_CONFIG='${{ secrets.NEXT_PUBLIC_FIREBASE_CONFIG }}' \
             --build-arg NEXT_PUBLIC_BASE_LAT=${{ secrets.NEXT_PUBLIC_BASE_LAT }} \
             --build-arg NEXT_PUBLIC_BASE_LON=${{ secrets.NEXT_PUBLIC_BASE_LON }} \
             --build-arg NEXT_PUBLIC_EMAILJS_SERVICE_ID=${{ secrets.NEXT_PUBLIC_EMAILJS_SERVICE_ID }} \
             --build-arg NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=${{ secrets.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID }} \
             --build-arg NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=${{ secrets.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY }} \
-            -t ${{ env.IMAGE }}:${{ github.sha }} \
-            -t ${{ env.IMAGE }}:latest \
+            --tag ${{ env.IMAGE }}:${{ github.sha }} \
+            --tag ${{ env.IMAGE }}:latest \
+            --file Dockerfile \
             .
 
       - name: Push Docker image
