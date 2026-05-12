@@ -222,6 +222,18 @@ express-wash/
 
 ---
 
+---
+
+## 📄 Información del Proyecto
+
+- **Desarrollada por:** Nelson Figueroa Albarrán
+- **Año:** 2026
+- **Asistencia IA:** Claude Code (Anthropic)
+- **Tipo:** MVP — Aplicación web de lavandería a domicilio
+- **Estado:** Producción
+
+---
+
 **Última actualización:** 2026-05-12  
 **Versión Actual:** 1.0.1  
 **Próxima:** 1.1.0 (P0: Stabilidad)

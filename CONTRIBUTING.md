@@ -376,4 +376,11 @@ Tu trabajo ayuda a mejorar Express Delivery Wash. ¡Apreciamos tu esfuerzo! 🎉
 
 ---
 
+## 📄 Acerca del Proyecto
+
+**Desarrollada por:** Nelson Figueroa Albarrán — 2026  
+**Asistencia IA:** Claude Code (Anthropic)
+
+---
+
 **Última actualización:** 2026-05-12
