@@ -24,13 +24,9 @@ jobs:
       - name: Configure Docker authentication
         run: gcloud auth configure-docker southamerica-west1-docker.pkg.dev
 
-      # Configurar buildx
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      # Construir imagen de Docker con buildx
+      # Construir imagen de Docker
       - name: Build Docker image
-        run: docker buildx build --load --build-arg NEXT_PUBLIC_FIREBASE_CONFIG='${{ secrets.NEXT_PUBLIC_FIREBASE_CONFIG }}' --build-arg NEXT_PUBLIC_BASE_LAT=${{ secrets.NEXT_PUBLIC_BASE_LAT }} --build-arg NEXT_PUBLIC_BASE_LON=${{ secrets.NEXT_PUBLIC_BASE_LON }} --build-arg NEXT_PUBLIC_EMAILJS_SERVICE_ID=${{ secrets.NEXT_PUBLIC_EMAILJS_SERVICE_ID }} --build-arg NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=${{ secrets.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID }} --build-arg NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=${{ secrets.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY }} -t ${{ env.IMAGE }}:${{ github.sha }} -t ${{ env.IMAGE }}:latest .
+        run: docker build --build-arg NEXT_PUBLIC_FIREBASE_CONFIG='${{ secrets.NEXT_PUBLIC_FIREBASE_CONFIG }}' --build-arg NEXT_PUBLIC_BASE_LAT=${{ secrets.NEXT_PUBLIC_BASE_LAT }} --build-arg NEXT_PUBLIC_BASE_LON=${{ secrets.NEXT_PUBLIC_BASE_LON }} --build-arg NEXT_PUBLIC_EMAILJS_SERVICE_ID=${{ secrets.NEXT_PUBLIC_EMAILJS_SERVICE_ID }} --build-arg NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=${{ secrets.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID }} --build-arg NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=${{ secrets.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY }} -t ${{ env.IMAGE }}:${{ github.sha }} -t ${{ env.IMAGE }}:latest .
 
       - name: Push Docker image
         run: |
