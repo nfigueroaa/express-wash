@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@14 edwash-temp --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --no-turbopack)",
+      "Bash(npm install *)",
+      "Bash(npx shadcn@latest init --defaults)",
+      "Bash(npx shadcn@latest add card badge input label select textarea sheet dialog table separator --overwrite)",
+      "Bash(rm -rf \"C:\\\\Users\\\\figue\\\\Documents\\\\Proyectos\\\\Claude Code\\\\edwash-temp\" 2>&1 && echo \"Directorio temporal eliminado\")",
+      "Bash(Get-ChildItem \"C:\\\\Users\\\\figue\\\\Documents\\\\Proyectos\\\\Claude Code\\\\edwash\\\\src\\\\app\")",
+      "Bash(npm run *)",
+      "Bash(gh run *)",
+      "PowerShell(gcloud config set project expresswash-prod-202605112332)",
+      "PowerShell(gcloud config get-value project)",
+      "Bash(timeout 180 bash -c 'while true; do curl -s https://express-wash-4hgom7r2cq-tl.a.run.app > /dev/null 2>&1 && echo \"✅ Deploy completado\" && break; sleep 10; done')",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(timeout 180 bash -c 'while true; do if curl -s https://express-wash-4hgom7r2cq-tl.a.run.app/api/geo?q=Santiago 2>&1 | grep -q \"displayName\"; then echo \"✅ API respondiendo correctamente\"; break; fi; sleep 10; echo \"⏳ Esperando...\"; done')"
+    ]
+  }
+}
