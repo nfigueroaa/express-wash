@@ -19,8 +19,17 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
       - uses: google-github-actions/setup-gcloud@v2
-      - name: Build and Push with Cloud Build
-        run: gcloud builds submit --config=cloudbuild.yaml --substitutions="_IMAGE_NAME=${{ env.IMAGE }},_COMMIT_SHA=${{ github.sha }},_NEXT_PUBLIC_FIREBASE_CONFIG=${{ secrets.NEXT_PUBLIC_FIREBASE_CONFIG }},_NEXT_PUBLIC_BASE_LAT=${{ secrets.NEXT_PUBLIC_BASE_LAT }},_NEXT_PUBLIC_BASE_LON=${{ secrets.NEXT_PUBLIC_BASE_LON }},_NEXT_PUBLIC_EMAILJS_SERVICE_ID=${{ secrets.NEXT_PUBLIC_EMAILJS_SERVICE_ID }},_NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=${{ secrets.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID }},_NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=${{ secrets.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY }}"
+      - name: Authenticate Docker to Artifact Registry
+        run: gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://southamerica-west1-docker.pkg.dev
+      - name: Build and Push image
+        env:
+          NEXT_PUBLIC_FIREBASE_CONFIG: ${{ secrets.NEXT_PUBLIC_FIREBASE_CONFIG }}
+          NEXT_PUBLIC_BASE_LAT: ${{ secrets.NEXT_PUBLIC_BASE_LAT }}
+          NEXT_PUBLIC_BASE_LON: ${{ secrets.NEXT_PUBLIC_BASE_LON }}
+          NEXT_PUBLIC_EMAILJS_SERVICE_ID: ${{ secrets.NEXT_PUBLIC_EMAILJS_SERVICE_ID }}
+          NEXT_PUBLIC_EMAILJS_TEMPLATE_ID: ${{ secrets.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID }}
+          NEXT_PUBLIC_EMAILJS_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY }}
+        run: docker buildx build --build-arg NEXT_PUBLIC_FIREBASE_CONFIG --build-arg NEXT_PUBLIC_BASE_LAT --build-arg NEXT_PUBLIC_BASE_LON --build-arg NEXT_PUBLIC_EMAILJS_SERVICE_ID --build-arg NEXT_PUBLIC_EMAILJS_TEMPLATE_ID --build-arg NEXT_PUBLIC_EMAILJS_PUBLIC_KEY -t ${{ env.IMAGE }}:${{ github.sha }} -t ${{ env.IMAGE }}:latest --push .
 
       - name: Deploy to Cloud Run
         run: |
