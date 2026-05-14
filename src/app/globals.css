@@ -24,6 +24,21 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
     --radius: 0.5rem;
+
+    /* Sistema Dark+Indigo (Stitch) */
+    --indigo-bg: #09090f;
+    --indigo-surface: #111128;
+    --indigo-surface-2: #16162a;
+    --indigo-primary: #c0c1ff;
+    --indigo-primary-dim: #9da1ff;
+    --indigo-btn: #2e3192;
+    --indigo-secondary: #d4bbff;
+    --indigo-lavender: #6d4ca6;
+    --indigo-tertiary: #60b1ea;
+    --indigo-border: rgba(192, 193, 255, 0.1);
+    --indigo-border-2: rgba(192, 193, 255, 0.06);
+    --indigo-text-muted: #888888;
+    --indigo-text-faint: #555555;
   }
 
   .dark {
@@ -65,21 +80,6 @@
   --magenta: #E91E63;
   --cyan: #00BCD4;
   --negro: #0D0D0D;
-
-  /* Sistema Dark+Indigo (Stitch) */
-  --indigo-bg: #09090f;
-  --indigo-surface: #111128;
-  --indigo-surface-2: #16162a;
-  --indigo-primary: #c0c1ff;
-  --indigo-primary-dim: #9da1ff;
-  --indigo-btn: #2e3192;
-  --indigo-secondary: #d4bbff;
-  --indigo-lavender: #6d4ca6;
-  --indigo-tertiary: #60b1ea;
-  --indigo-border: rgba(192, 193, 255, 0.1);
-  --indigo-border-2: rgba(192, 193, 255, 0.06);
-  --indigo-text-muted: #888888;
-  --indigo-text-faint: #555555;
 }
 
 @layer utilities {
