@@ -1,61 +1,206 @@
-# Guía de Deploy
+# Guía de Deploy a Cloud Run
 
-## Infraestructura GCP
+## 🏗️ Infraestructura GCP
 
 | Recurso | Valor |
 |---------|-------|
-| Proyecto | `expresswash-prod-202605112332` |
-| Región | `southamerica-west1` |
-| Servicio Cloud Run | `express-wash` |
-| Artifact Registry | `southamerica-west1-docker.pkg.dev/expresswash-prod-202605112332/express-wash/express-wash` |
-| Service Account | `github-deployer@expresswash-prod-202605112332.iam.gserviceaccount.com` |
+| **Proyecto** | `expresswash-prod-202605112332` |
+| **Región** | `southamerica-west1` (América del Sur) |
+| **Servicio** | `express-wash` |
+| **Artifact Registry** | `southamerica-west1-docker.pkg.dev/expresswash-prod-202605112332/express-wash/express-wash` |
+| **Service Account** | `github-deployer@expresswash-prod-202605112332.iam.gserviceaccount.com` |
+| **URL producción** | https://express-wash-4hgom7r2cq-tl.a.run.app |
 
-## Primer Deploy (Setup)
+---
 
-1. Verificar que los 9 GitHub Secrets están configurados
-2. Hacer push a `main`:
-   ```bash
-   git push origin main
-   ```
-3. Ir a GitHub → Actions → monitorear el workflow
-4. Si falla, revisar los logs del step específico
+## 🔐 GitHub Secrets (9 requeridos)
 
-## Deploy Rutinario
+Configurar en GitHub → Settings → Secrets and variables → Actions:
+
+```
+GCP_SA_KEY                           # JSON service account
+ANTHROPIC_API_KEY                    # sk-ant-...
+NEXT_PUBLIC_FIREBASE_CONFIG          # {"apiKey":"...","projectId":"..."}
+NEXT_PUBLIC_BASE_LAT                 # -33.4489
+NEXT_PUBLIC_BASE_LON                 # -70.6693
+NEXT_PUBLIC_EMAILJS_SERVICE_ID       # service_xxx
+NEXT_PUBLIC_EMAILJS_TEMPLATE_ID      # template_xxx
+NEXT_PUBLIC_EMAILJS_PUBLIC_KEY       # xxx_public
+OWNER_EMAIL                          # hola@expressdeliverywash.cl
+```
+
+---
+
+## ⚙️ Pipeline GitHub Actions
+
+El workflow `.github/workflows/deploy.yml` ejecuta:
+
+```
+1. Checkout código
+   ↓
+2. Autenticar en GCP (GCP_SA_KEY)
+   ↓
+3. Configurar Docker → Artifact Registry
+   ↓
+4. Build Docker image (multistage: deps → builder → runner)
+   - Inyectar NEXT_PUBLIC_* como ARGs
+   - Inyectar NEXT_PUBLIC_BASE_URL="" (vacío por defecto)
+   - npm run build → generate .next/standalone
+   ↓
+5. Push a Artifact Registry
+   ↓
+6. Deploy a Cloud Run
+   - Puerto: 8080
+   - Memoria: 512Mi
+   - CPU: 1
+   - Min instances: 0
+   - Max instances: 10
+   - Env vars (runtime):
+     • ANTHROPIC_API_KEY
+     • OWNER_EMAIL
+```
+
+**Tiempo total:** ~5 minutos
+
+---
+
+## ⚡ Deploy Rutinario
 
 ```bash
-# Cualquier push a main dispara el deploy automáticamente
 git add .
-git commit -m "feat: descripción del cambio"
+git commit -m "feat: descripción"
 git push origin main
 ```
 
-## Rollback
+GitHub Actions dispara automáticamente. Monitor en: https://github.com/nfigueroaa/express-wash/actions
+
+---
+
+## 🔄 Rollback a Revisión Anterior
 
 ```bash
-# Ver versiones anteriores
-gcloud run revisions list --service=express-wash --region=southamerica-west1
+# Listar revisiones (últimas primero)
+gcloud run revisions list \
+  --service=express-wash \
+  --region=southamerica-west1 \
+  --limit=10
 
-# Redirigir tráfico a una revisión anterior
+# Redirigir 100% tráfico a una revisión anterior
 gcloud run services update-traffic express-wash \
   --region=southamerica-west1 \
   --to-revisions=express-wash-XXXXX=100
 ```
 
-## Ver Logs en Producción
+---
+
+## 📊 Monitoreo & Logs
 
 ```bash
-gcloud run services logs read express-wash \
+# Ver últimos 50 logs
+gcloud run logs read express-wash \
   --region=southamerica-west1 \
   --limit=50
+
+# Solo errores
+gcloud run logs read express-wash \
+  --region=southamerica-west1 \
+  --limit=50 | grep ERROR
+
+# En tiempo real (tail)
+gcloud run logs read express-wash \
+  --region=southamerica-west1 \
+  --follow
 ```
 
-## Troubleshooting Común
+---
 
-| Error | Causa probable | Solución |
-|-------|----------------|----------|
-| Build falla en GitHub Actions | Secret faltante | Verificar los 9 secrets en Settings → Secrets |
-| `docker push` falla | Auth de Artifact Registry | Verificar que `configure-docker` usa `southamerica-west1-docker.pkg.dev` |
-| Cloud Run no levanta | Puerto incorrecto | Verificar `ENV PORT=8080` en Dockerfile |
-| Leaflet error SSR | Import fuera de client | Verificar `dynamic({ ssr: false })` en `MapaCobertura.tsx` |
-| Firebase init error | Config inválida | Verificar JSON en `NEXT_PUBLIC_FIREBASE_CONFIG` secret |
-| Chat no responde | API key inválida | Verificar `ANTHROPIC_API_KEY` en Cloud Run env vars |
+## 🐛 Troubleshooting Deploy
+
+| Error | Causa | Solución |
+|-------|-------|----------|
+| **GitHub Actions: Secret faltante** | Variable build no inyectada | Revisar 9 secrets en Settings |
+| **Docker build falla** | `npm run build` error | Ver logs GitHub Actions → Build step |
+| **`docker push` falla** | Auth Artifact Registry | Verificar `gcloud auth configure-docker` usa `southamerica-west1-docker.pkg.dev` |
+| **Cloud Run no levanta** | Puerto incorrecto | Dockerfile: `ENV PORT=8080` ✅ |
+| **Pedidos/Emails fallan en prod** | `NEXT_PUBLIC_BASE_URL` vacía en Dockerfile | ✅ Ya fix: línea 44 deploy.yml: `--build-arg NEXT_PUBLIC_BASE_URL=""` |
+| **Firebase config inválida** | JSON malformado en secret | Verificar caracteres especiales/quotes |
+| **Chatbot no responde** | `ANTHROPIC_API_KEY` faltante | Revisar Cloud Run env vars: `gcloud run services describe express-wash --region=southamerica-west1` |
+
+---
+
+## 🚀 Primer Deploy (Setup Inicial)
+
+Si estás configurando por primera vez:
+
+```bash
+# 1. Crear GCP project y service account
+gcloud projects create expresswash-prod-202605112332
+gcloud iam service-accounts create github-deployer \
+  --project=expresswash-prod-202605112332
+
+# 2. Otorgar permisos
+gcloud projects add-iam-policy-binding expresswash-prod-202605112332 \
+  --member="serviceAccount:github-deployer@expresswash-prod-202605112332.iam.gserviceaccount.com" \
+  --role="roles/run.admin"
+
+# 3. Crear key JSON
+gcloud iam service-accounts keys create key.json \
+  --iam-account=github-deployer@expresswash-prod-202605112332.iam.gserviceaccount.com
+
+# 4. Copiar contenido key.json → GitHub secret GCP_SA_KEY
+# 5. Añadir los otros 8 secrets
+# 6. Push a main
+git push origin main
+```
+
+---
+
+## 📝 Dockerfile Multistage
+
+```dockerfile
+# Stage 1: Deps
+FROM node:20-alpine AS deps
+RUN npm ci
+
+# Stage 2: Build (inyecta NEXT_PUBLIC_*)
+FROM node:20-alpine AS builder
+ARG NEXT_PUBLIC_FIREBASE_CONFIG
+ARG NEXT_PUBLIC_BASE_LAT
+ARG NEXT_PUBLIC_BASE_LON
+ARG NEXT_PUBLIC_EMAILJS_SERVICE_ID
+ARG NEXT_PUBLIC_EMAILJS_TEMPLATE_ID
+ARG NEXT_PUBLIC_EMAILJS_PUBLIC_KEY
+ARG NEXT_PUBLIC_BASE_URL
+
+ENV NEXT_PUBLIC_FIREBASE_CONFIG=$NEXT_PUBLIC_FIREBASE_CONFIG
+... (copiar resto)
+RUN npm run build
+
+# Stage 3: Runner (mínima)
+FROM node:20-alpine AS runner
+ENV NODE_ENV=production
+ENV PORT=8080
+COPY --from=builder /app/.next/standalone ./
+EXPOSE 8080
+CMD ["node", "server.js"]
+```
+
+---
+
+## 🔔 Notas de Producción
+
+1. **NEXT_PUBLIC_BASE_URL en Dockerfile:** Actualmente vacía (`--build-arg NEXT_PUBLIC_BASE_URL=""`) — usa mismo dominio. Si necesitas URL explícita, añadir secret y actualizar deploy.yml.
+
+2. **Firestore Realtime:** Replicate desde Cloud Console, no desde código.
+
+3. **Certificate autorenewable:** Cloud Run maneja HTTPS automáticamente.
+
+4. **Free tier Cloud Run:** 2M requests/mes gratis — estimado <100K/mes hoy.
+
+5. **Ver estado actual:**
+   ```bash
+   gcloud run services describe express-wash --region=southamerica-west1
+   ```
+
+**Última actualización:** 2026-05-13  
+**Versión:** Pipeline ✅ Estable

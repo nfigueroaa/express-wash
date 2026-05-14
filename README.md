@@ -32,9 +32,9 @@
 
 | Feature | Descripción |
 |---------|-------------|
-| 🏠 **Landing Page** | Hero, grid de servicios y calculadora de precios interactiva |
-| 📦 **Formulario de Pedido** | Geocoding con Nominatim, mapa Leaflet, cálculo de despacho |
-| 🤖 **Chatbot IA** | Washi — asistente con Claude Haiku 4.5, FAQ completa, escalación automática |
+| 🏠 **Landing Page Dark+Indigo** | Hero split 2 columnas, BentoGrid, FeaturesSection, PricingCards (3 planes), CTASection — Unsplash + Montserrat 600/700 |
+| 📦 **Formulario de Pedido** | Geocoding con Nominatim, mapa Leaflet, cálculo de despacho, integración calculadora |
+| 🤖 **Chatbot IA (Washi)** | Claude Haiku 4.5, FAQ completa, escalación automática a email |
 | 📊 **Panel Admin** | Tabla de pedidos con filtros y cambio de estado en tiempo real |
 | 📧 **Notificaciones** | Email automático al dueño vía EmailJS en cada pedido nuevo |
 | 🗺️ **Mapas** | Leaflet + OpenStreetMap (sin API keys, 100% gratuito) |
@@ -43,14 +43,17 @@
 
 ## 🛠️ Stack Técnico
 
-```
-Frontend:  Next.js 14 (App Router) · TypeScript · Tailwind CSS · shadcn/ui
-Base datos: Firebase Firestore (client SDK, sin Admin SDK)
-Mapas:     Leaflet + OpenStreetMap + Nominatim geocoding
-IA:        Claude Haiku 4.5 via Anthropic API (fetch directo)
-Email:     EmailJS (200 emails/mes gratis)
-Deploy:    GitHub Actions → Docker multistage → GCP Cloud Run
-```
+| Capa | Tecnología |
+|------|-----------|
+| **Frontend** | Next.js 14 (App Router) · TypeScript · Tailwind CSS · shadcn/ui |
+| **Tipografía** | Montserrat 600/700 (headers) · Inter 400/500/600 (body) — Google Fonts |
+| **Imágenes** | Unsplash (remotePatterns en next.config.js) |
+| **Base datos** | Firebase Firestore (client SDK, sin Admin SDK) |
+| **Mapas** | Leaflet + OpenStreetMap + Nominatim geocoding |
+| **IA** | Claude Haiku 4.5 via Anthropic API (fetch directo) |
+| **Email** | EmailJS (200 emails/mes gratis) |
+| **Deploy** | GitHub Actions → Docker multistage → GCP Cloud Run (southamerica-west1) |
+| **UI System** | Dark+Indigo: --indigo-bg (#09090f), --indigo-primary (#c0c1ff), --indigo-btn (#2e3192), --indigo-lavender (#6d4ca6) |
 
 ---
 
@@ -87,7 +90,7 @@ npm install
 cp .env.local.example .env.local
 ```
 
-Editar `.env.local` con tus valores reales (ver sección de variables más abajo).
+Edita `.env.local` con credenciales de Firebase, EmailJS, Nominatim y Anthropic (ver tabla abajo).
 
 ### 3. Ejecutar en desarrollo
 
@@ -109,7 +112,8 @@ npm run dev
 | `NEXT_PUBLIC_EMAILJS_SERVICE_ID` | ID del servicio EmailJS | `service_abc123xyz` |
 | `NEXT_PUBLIC_EMAILJS_TEMPLATE_ID` | ID del template EmailJS | `template_abc123xyz` |
 | `NEXT_PUBLIC_EMAILJS_PUBLIC_KEY` | Public key de EmailJS | `abc123xyz_public` |
-| `NEXT_PUBLIC_BASE_URL` | URL base para internal API calls | `` (vacío = usar mismo dominio) |
+| `NEXT_PUBLIC_BASE_URL` | URL base para internal API calls | `` (vacío en dev/prod, se inyecta en Docker) |
+| `NEXT_PUBLIC_MONTSERRAT_LOADED` | Flag para tipografía | `true` (sistema font loading desde next/font/google) |
 
 ### Runtime (configuradas en Cloud Run)
 | Variable | Descripción | Sensibilidad |
@@ -154,17 +158,19 @@ git push origin main
 
 ### GitHub Secrets requeridos (9 total)
 
-| Secret | Descripción |
-|--------|-------------|
-| `GCP_SA_KEY` | JSON de la service account de GCP |
-| `ANTHROPIC_API_KEY` | API key de Anthropic |
-| `NEXT_PUBLIC_FIREBASE_CONFIG` | Configuración Firebase |
-| `NEXT_PUBLIC_BASE_LAT` | Latitud base |
-| `NEXT_PUBLIC_BASE_LON` | Longitud base |
-| `NEXT_PUBLIC_EMAILJS_SERVICE_ID` | EmailJS service ID |
-| `NEXT_PUBLIC_EMAILJS_TEMPLATE_ID` | EmailJS template ID |
-| `NEXT_PUBLIC_EMAILJS_PUBLIC_KEY` | EmailJS public key |
-| `OWNER_EMAIL` | Email del dueño |
+Configurar en GitHub → Settings → Secrets and variables → Actions:
+
+| Secret | Descripción | Tipo |
+|--------|-------------|------|
+| `GCP_SA_KEY` | JSON de la service account de GCP | Credencial 🔴 |
+| `ANTHROPIC_API_KEY` | API key de Anthropic (server-only) | Credencial 🔴 |
+| `NEXT_PUBLIC_FIREBASE_CONFIG` | JSON: {apiKey, projectId, etc} | Configuración 🟡 |
+| `NEXT_PUBLIC_BASE_LAT` | Latitud base: `-33.4489` | Configuración 🟡 |
+| `NEXT_PUBLIC_BASE_LON` | Longitud base: `-70.6693` | Configuración 🟡 |
+| `NEXT_PUBLIC_EMAILJS_SERVICE_ID` | Service ID de EmailJS | Credencial 🟡 |
+| `NEXT_PUBLIC_EMAILJS_TEMPLATE_ID` | Template ID de EmailJS | Credencial 🟡 |
+| `NEXT_PUBLIC_EMAILJS_PUBLIC_KEY` | Public key de EmailJS | Credencial 🟡 |
+| `OWNER_EMAIL` | Email dueño (p.ej. hola@expressdeliverywash.cl) | Configuración 🟡 |
 
 ---
 
@@ -182,14 +188,17 @@ src/
 │       ├── geo/route.ts      # Geocoding Nominatim
 │       └── notify/route.ts   # Notificación EmailJS
 ├── components/
-│   ├── Hero.tsx
-│   ├── ServiciosGrid.tsx
-│   ├── CalculadoraPedido.tsx
-│   ├── MapaCobertura.tsx     # dynamic import (sin SSR)
+│   ├── Hero.tsx              # Server, split 2col, Unsplash
+│   ├── BentoGrid.tsx         # Server, 3-item card grid (NEW)
+│   ├── FeaturesSection.tsx   # Server, 3 features + imagen (NEW)
+│   ├── PricingCards.tsx      # Server, 3 planes + CTA (NEW)
+│   ├── CTASection.tsx        # Client (!use), CTA final (NEW)
+│   ├── CalculadoraPedido.tsx # Server, calculadora precios
+│   ├── MapaCobertura.tsx     # dynamic import (no SSR)
 │   ├── MapaInner.tsx         # Leaflet real
-│   ├── ChatbotWidget.tsx     # Chat flotante
+│   ├── ChatbotWidget.tsx     # Client, chat flotante
 │   ├── PedidosTable.tsx      # Admin table
-│   └── Footer.tsx
+│   └── Footer.tsx            # Server, Dark+Indigo
 └── lib/
     ├── types.ts              # TypeScript types + PRECIOS
     ├── utils.ts              # Haversine, formatCLP, etc.
@@ -224,29 +233,18 @@ npm run test:coverage
 
 ---
 
-## 🔍 Troubleshooting
+## 🔍 Troubleshooting Rápido
 
-### "Los pedidos no se guardan"
-1. Verificar que Firestore está conectado (Firebase Console)
-2. Ver logs: `npm run logs` (si está en Cloud Run)
-3. Revisar `/api/order` en Network tab del navegador
+| Problema | Síntomas | Causa | Solución |
+|----------|----------|-------|----------|
+| **Pedidos no se guardan** | Formulario dice "OK" pero Firestore vacío | Firestore rules bloqueadas / config inválida | Ver `/api/order` logs; permitir writes en Firestore |
+| **Emails no llegan** | Pedido creado pero sin email | EmailJS keys incorrectas / template sin variables | Verificar IDs en EmailJS Dashboard |
+| **Mapa no se carga** | Página `/pedido` sin mapa visual | Leaflet no importado o dynamic import fallido | Verificar `MapaInner.tsx` tiene `'use client'` |
+| **Notificaciones fallan** | Pedidos OK pero sin emails al dueño | `NEXT_PUBLIC_BASE_URL` vacía en Dockerfile | Agregar ARG/ENV en Dockerfile + --build-arg en deploy.yml |
+| **Cloud Run 500 error** | Página no carga en producción | Env vars no inyectadas o build incompleto | Ver `gcloud run logs read express-wash --limit 50` |
+| **Chatbot no responde** | Chat abierto pero sin respuesta | `ANTHROPIC_API_KEY` faltante en Cloud Run | Verificar env vars en Cloud Run settings |
 
-### "Los emails no llegan"
-1. Verificar EmailJS dashboard: https://dashboard.emailjs.com
-2. Revisar que `NEXT_PUBLIC_EMAILJS_*` estén correctos
-3. Ver error en `/api/notify` logs
-
-### "El mapa no se carga"
-1. Verificar que Leaflet CSS está importado en `MapaInner.tsx`
-2. Ver si hay errores en console (F12)
-3. Revisar que Nominatim responde: `curl https://nominatim.openstreetmap.org/search?q=Santiago`
-
-### "Cloud Run returns 500 error"
-1. Ver logs en Cloud Console: `gcloud run logs read express-wash --limit 50`
-2. Verificar que todas las env vars están configuradas
-3. Revisar que Docker build es exitoso: `docker build ...`
-
-→ **Ver más:** [Troubleshooting Guide](docs/troubleshooting.md)
+→ **Detallado:** [Troubleshooting Guide](docs/troubleshooting.md)
 
 ---
 
@@ -333,5 +331,5 @@ Ver [ROADMAP.md](ROADMAP.md) para detalles completos de todas las 13 mejoras pla
 - **Email:** [tu-email@example.com](mailto:hola@expressdeliverywash.cl)
 - **WhatsApp:** [+56 9 4274 9703](https://wa.me/56942749703)
 
-**Última actualización:** 2026-05-12  
-**Versión:** 1.0.0-MVP
+**Última actualización:** 2026-05-13 (Dark+Indigo Redesign)  
+**Versión:** 1.0.0-MVP (P1.1 ✅ Completado)

@@ -6,6 +6,34 @@ Soluciones a problemas comunes en Express Delivery Wash.
 
 ## 🔴 Problemas Críticos
 
+### NEXT_PUBLIC_BASE_URL vacía en Docker
+
+**Síntomas:**
+- Pedidos se crean pero `/api/notify` falla silenciosamente
+- Logs muestran: "NEXT_PUBLIC_BASE_URL is undefined"
+- Emails no llegan aunque EmailJS esté configurado
+
+**Causa:**
+Variable de entorno no inyectada en build de Docker. Afecta redirección de callback después de pedido.
+
+**Solución:**
+Ya está arreglado en `deploy.yml` (línea con `--build-arg NEXT_PUBLIC_BASE_URL=""`), pero puedes verificar:
+
+```bash
+# En Cloud Run logs
+gcloud run logs read express-wash --limit 50 | grep NEXT_PUBLIC_BASE_URL
+
+# Debería mostrar: "NEXT_PUBLIC_BASE_URL: https://express-wash-4hgom7r2cq-tl.a.run.app"
+```
+
+Si ves `undefined`, redeploy:
+```bash
+git push origin main
+# Espera a que GitHub Actions termine (~5 min)
+```
+
+---
+
 ### Los pedidos no se guardan en Firestore
 
 **Síntomas:**
@@ -215,15 +243,21 @@ Firestore tiene retraso de replicación (< 1 segundo normalmente).
 **Síntomas:**
 - Estilos feos o grises en producción
 - Colores correctos en dev pero no en prod
+- Dark+Indigo variables CSS no se aplican
 
 **Solución:**
 
-Tailwind necesita recompilarse si cambias HTML:
+Tailwind y CSS variables necesitan recompilarse si cambias HTML o estilos:
 
 ```bash
 npm run build
 # o en dev mode, espera a que se recompile
 ```
+
+Si los cambios están en `globals.css` (variables Dark+Indigo):
+1. Asegúrate que `:root {}` tiene todas las variables `--indigo-*`
+2. Reinicia dev server: Ctrl+C → `npm run dev`
+3. Limpia cache: `rm -rf .next` → `npm run dev`
 
 ### Imágenes no se cargan
 
@@ -343,15 +377,24 @@ Antes de reportar un bug, verifica:
 
 - [ ] `.env.local` tiene todas las variables requeridas
 - [ ] Dev server está corriendo: `npm run dev`
+- [ ] **Landing page muestra Dark+Indigo colores:**
+  - [ ] Fondo oscuro (#09090f)
+  - [ ] Textos primarios en lavanda (#c0c1ff)
+  - [ ] Botones en índigo (#2e3192)
+- [ ] **Landing page muestra nuevos componentes:**
+  - [ ] BentoGrid (2 cards con imágenes)
+  - [ ] FeaturesSection (3 features)
+  - [ ] PricingCards (3 planes, Confort XL destacado)
 - [ ] Todos los servicios tienen credenciales válidas:
   - [ ] Firebase config es correcto
   - [ ] EmailJS service/template/key son correctos
   - [ ] Anthropic API key es válido
 - [ ] Firestore existe y tiene permisos de lectura/escritura
 - [ ] EmailJS template existe y tiene las variables necesarias
-- [ ] Cloud Run tiene todas las env vars configuradas
+- [ ] Cloud Run tiene todas las env vars configuradas (incluyendo NEXT_PUBLIC_BASE_URL)
 - [ ] Últimas 50 logs no muestran errores críticos
 - [ ] Base de datos (Firestore) está respondiendo
+- [ ] CSS variables Dark+Indigo están presentes en `globals.css`
 
 ---
 
@@ -397,5 +440,41 @@ Abre un issue en GitHub: https://github.com/nfigueroaa/express-wash/issues/new
 
 ---
 
-**Última actualización:** 2026-05-12  
+---
+
+## 🎨 Verificación Visual Dark+Indigo
+
+Si la landing page se ve con colores viejos o incorrectos:
+
+**Paso 1: Verifica variables CSS en Developer Tools**
+```
+F12 → Console → 
+getComputedStyle(document.documentElement).getPropertyValue('--indigo-bg')
+→ Debe devolver: " #09090f" (con espacio)
+```
+
+**Paso 2: Inspecciona elementos críticos**
+- Hero: `bg-[--indigo-bg]` debe mostrar #09090f
+- Botones: `bg-[--indigo-btn]` debe mostrar #2e3192
+- Textos: `text-[--indigo-primary]` debe mostrar #c0c1ff
+
+**Paso 3: Si los valores son viejos**
+```bash
+# 1. Limpia build
+rm -rf .next
+
+# 2. Reconstruye
+npm run build
+
+# 3. O en dev
+npm run dev
+```
+
+**Paso 4: Verifica tipografía**
+- Headers deben usar Montserrat 600/700
+- Body/textos deben usar Inter 400
+
+Abre DevTools → Inspect elemento → Computed Styles → busca `font-family`
+
+**Última actualización:** 2026-05-14  
 **Mantener al día:** A medida que resolvemos issues, agregamos aquí
