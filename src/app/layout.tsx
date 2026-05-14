@@ -1,8 +1,19 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Montserrat } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const montserrat = Montserrat({
+  subsets: ['latin'],
+  weight: ['600', '700'],
+  variable: '--font-montserrat',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Express Delivery Wash — Lavandería a domicilio Santiago',
@@ -24,7 +35,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body className={`${inter.className} bg-black text-white antialiased`}>
+      <body
+        className={`${inter.variable} ${montserrat.variable} font-inter antialiased`}
+        style={{ backgroundColor: 'var(--indigo-bg)', color: '#ffffff' }}
+      >
         {children}
       </body>
     </html>
