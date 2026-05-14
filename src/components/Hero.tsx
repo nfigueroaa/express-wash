@@ -1,60 +1,128 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 
 export function Hero() {
   return (
-    <section className="min-h-screen flex flex-col items-center justify-center text-center px-4 py-20 bg-gradient-to-b from-black via-gray-950 to-black">
-      <span
-        className="inline-block px-4 py-1.5 rounded-full text-sm font-semibold text-white mb-6"
-        style={{ backgroundColor: '#E91E63' }}
-      >
-        🧺 Santiago, Chile
-      </span>
+    <section
+      className="relative px-6 md:px-16 py-20 md:py-28 overflow-hidden"
+      style={{ backgroundColor: 'var(--indigo-bg)' }}
+    >
+      {/* Decoración fondo */}
+      <div
+        className="absolute top-0 right-0 w-1/2 h-full -z-10 blur-3xl"
+        style={{
+          background:
+            'radial-gradient(circle at 80% 50%, rgba(21,21,125,0.18) 0%, transparent 70%)',
+        }}
+      />
 
-      <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-white mb-6 leading-tight tracking-tight">
-        Tu ropa limpia,
-        <br />
-        <span style={{ color: '#00BCD4' }}>sin salir de casa</span>
-      </h1>
-
-      <p className="text-gray-400 text-lg md:text-xl max-w-2xl mb-10 leading-relaxed">
-        Retiro y entrega a domicilio en Santiago. Cubrecamas, plumones, colchas y ropa
-        en 24–48 horas. Sin esfuerzo, sin vueltas.
-      </p>
-
-      <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <Link href="/pedido">
-          <Button
-            size="lg"
-            className="text-white font-bold px-10 py-6 text-lg rounded-full hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: '#E91E63', border: 'none' }}
+      <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-10 md:gap-16 items-center">
+        {/* Columna izquierda — texto */}
+        <div>
+          {/* Badge IA */}
+          <span
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-6"
+            style={{
+              background: 'rgba(192,193,255,0.08)',
+              border: '1px solid var(--indigo-border)',
+              color: 'var(--indigo-primary-dim)',
+            }}
           >
-            Hacer un pedido →
-          </Button>
-        </Link>
-        <Link href="#servicios">
-          <Button
-            variant="outline"
-            size="lg"
-            className="px-10 py-6 text-lg rounded-full border-gray-700 text-gray-300 hover:bg-gray-900 hover:text-white transition-colors"
-          >
-            Ver servicios
-          </Button>
-        </Link>
-      </div>
+            ✦ Impulsado por Google Cloud AI
+          </span>
 
-      <div className="mt-16 flex flex-col sm:flex-row gap-6 text-center">
-        {[
-          { icon: '⚡', label: '24–48 hrs', sub: 'Entrega garantizada' },
-          { icon: '🏠', label: 'A domicilio', sub: 'Retiro y entrega' },
-          { icon: '📍', label: '15 km', sub: 'Radio de cobertura' },
-        ].map((stat) => (
-          <div key={stat.label} className="flex flex-col items-center">
-            <span className="text-2xl mb-1">{stat.icon}</span>
-            <span className="text-white font-bold text-lg">{stat.label}</span>
-            <span className="text-gray-500 text-sm">{stat.sub}</span>
+          {/* Título */}
+          <h1
+            className="font-montserrat text-4xl md:text-5xl font-bold leading-tight tracking-tight mb-5"
+            style={{ letterSpacing: '-0.02em' }}
+          >
+            Tu Lavandería,{' '}
+            <br />
+            <span style={{ color: 'var(--indigo-primary)' }}>
+              Reimaginada por IA
+            </span>
+          </h1>
+
+          {/* Subtítulo */}
+          <p
+            className="font-inter text-base md:text-lg leading-relaxed mb-8 max-w-lg"
+            style={{ color: 'var(--indigo-text-muted)' }}
+          >
+            Experimenta el futuro del cuidado textil. Recogemos y entregamos
+            tus prendas, cubrecamas y plumones con precisión quirúrgica y
+            suavidad algodonosa — en 24 a 48 horas.
+          </p>
+
+          {/* Botones */}
+          <div className="flex flex-wrap gap-3">
+            <Link href="/pedido">
+              <Button
+                size="lg"
+                className="rounded-full font-semibold px-8 py-6 text-base text-white hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: 'var(--indigo-btn)', border: 'none' }}
+              >
+                Hacer mi Pedido
+              </Button>
+            </Link>
+            <Link href="#cobertura">
+              <Button
+                variant="outline"
+                size="lg"
+                className="rounded-full px-8 py-6 text-base transition-colors"
+                style={{
+                  borderColor: '#333',
+                  color: 'var(--indigo-primary-dim)',
+                  backgroundColor: 'transparent',
+                }}
+              >
+                Ver Cobertura
+              </Button>
+            </Link>
           </div>
-        ))}
+        </div>
+
+        {/* Columna derecha — imagen */}
+        <div className="relative">
+          <div
+            className="relative w-full aspect-square rounded-[32px] overflow-hidden"
+            style={{
+              border: '1px solid var(--indigo-border)',
+              boxShadow: '0 24px 48px rgba(0,0,0,0.4)',
+            }}
+          >
+            <Image
+              src="https://images.unsplash.com/photo-1582735689369-4fe89db7114c?w=600&q=80"
+              alt="Ropa blanca perfectamente plegada — Express Delivery Wash"
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+
+          {/* Badge flotante */}
+          <div
+            className="absolute -bottom-4 -left-4 flex items-center gap-3 px-4 py-3 rounded-2xl"
+            style={{
+              backgroundColor: 'var(--indigo-surface)',
+              border: '1px solid var(--indigo-border)',
+              boxShadow: '0 16px 32px rgba(0,0,0,0.4)',
+            }}
+          >
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+              style={{ backgroundColor: 'rgba(0,66,100,0.4)' }}
+            >
+              🚚
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-white">Recogida Express</p>
+              <p className="text-xs" style={{ color: 'var(--indigo-text-faint)' }}>
+                En menos de 60 min
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
