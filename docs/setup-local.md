@@ -13,6 +13,7 @@ Cómo configurar Express Delivery Wash en tu máquina para desarrollo.
 - **Cuenta Firebase** (crear en https://console.firebase.google.com)
 - **Cuenta Anthropic** (para API key: https://console.anthropic.com)
 - **Cuenta EmailJS** (para notificaciones: https://www.emailjs.com)
+- **Conocimiento de Dark+Indigo design system** (ver [Arquitectura](arquitectura.md) para detalle visual)
 
 ---
 
@@ -37,11 +38,12 @@ Esto descargará todas las dependencias del `package.json`. Espera ~2-3 minutos.
 - `next@14` — Framework web
 - `react@18` — Library UI
 - `typescript` — Type safety
-- `tailwindcss` — Estilos
+- `tailwindcss` — Estilos (con Dark+Indigo design system)
 - `firebase` — Base de datos
 - `leaflet` — Mapas
 - `emailjs-com` — Notificaciones
 - `anthropic` — API de Claude (opcional, usamos fetch directo)
+- `@next/font/google` — Montserrat (headers) + Inter (body)
 
 ### 3. Crear archivo `.env.local`
 
@@ -144,6 +146,9 @@ Abre http://localhost:3000 — debe cargar la landing page.
 ### 2. Probar landing page
 
 - ✅ Debe mostrar hero con logo y servicios
+- ✅ **Verifica colores Dark+Indigo:** fondo oscuro (#09090f), primario lavanda (#c0c1ff), botones índigo (#2e3192)
+- ✅ **Verifica nuevos componentes:** BentoGrid (2 cards), FeaturesSection, PricingCards (3 planes)
+- ✅ **Verifica tipografía:** Headers en Montserrat bold, body en Inter regular
 - ✅ Mapa debe aparecer con círculo de cobertura
 - ✅ Calculadora de precios debe funcionar
 - ✅ Chatbot debe estar en esquina inferior derecha
@@ -328,4 +333,39 @@ Después de verificar setup:
 - Abre un [GitHub Issue](https://github.com/nfigueroaa/express-wash/issues)
 - Contacta al equipo (ver README.md)
 
-**Última actualización:** 2026-05-12
+---
+
+## 🎨 Dark+Indigo Design System
+
+La landing page usa el sistema visual "Purity Tech" con paleta Dark+Indigo:
+
+**Colores CSS Variables (en `globals.css`):**
+```css
+--indigo-bg: #09090f           /* Fondo principal */
+--indigo-surface: #111128      /* Cards y secciones */
+--indigo-primary: #c0c1ff      /* Textos y logo */
+--indigo-btn: #2e3192          /* Botones principales */
+--indigo-lavender: #6d4ca6     /* Acentos */
+--indigo-tertiary: #60b1ea     /* Chips y checkmarks */
+--cta: #E91E63                 /* Solo botón Confort XL */
+```
+
+**Tipografía:**
+- **Headers (H1-H3):** Montserrat 600/700, -0.02em letter-spacing
+- **Body/UI:** Inter 400/500/600
+
+**Componentes nuevos:**
+- `Hero.tsx` — Layout 2 columnas (texto + imagen Unsplash)
+- `BentoGrid.tsx` — 2 featured cards (Prendas Diarias + Cubrecamas)
+- `FeaturesSection.tsx` — 3 features (AI Support, GCP, Easy Ordering)
+- `PricingCards.tsx` — 3 planes (Essential, Confort XL featured, Deluxe AI)
+- `CTASection.tsx` — CTA final + chatbot trigger
+
+Si cambias colores o tipografía, recuerda:
+```bash
+npm run dev   # Tailwind se recompila automáticamente
+# o
+npm run build # Si estás debugueando producción
+```
+
+**Última actualización:** 2026-05-14
