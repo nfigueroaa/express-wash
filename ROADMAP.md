@@ -1,7 +1,7 @@
 # 📋 Roadmap Express Delivery Wash — 2026
 
-**Última actualización:** 2026-05-12  
-**Estado:** MVP en producción ✅ — Mejoras planificadas
+**Última actualización:** 2026-05-13  
+**Estado:** MVP en producción ✅ — Mejoras planificadas | P1.1 Imágenes & Brand Assets ✅ completado
 
 ---
 
@@ -107,31 +107,33 @@ Este roadmap organiza las mejoras del MVP en **4 fases** de 2 horas cada una, en
 
 ## 🟠 FASE P1: UX & CONTENIDO (Sesiones 4-6)
 
-### P1.1: Imágenes & Brand Assets (2h)
-**Descripción:** Agregar imágenes de marca y servicios para mejorar atractivo visual.
+### P1.1: Imágenes & Brand Assets (2h) ✅ Completado 2026-05-13
 
-- [ ] **Crear/obtener imágenes**
+> **Nota:** Completado como redesign Dark+Indigo completo — nuevo sistema de colores, tipografía, componentes Hero, Navbar, Footer, ServiciosGrid, ChatWidget, y assets de marca integrados.
+
+- [x] **Crear/obtener imágenes**
   - Logo Express Delivery Wash (PNG + SVG)
   - Foto de lavandería/ropa (hero)
   - Iconos para cada servicio (lavado, planchado, etc.)
   - Foto de cobertura/mapa
   
-- [ ] **Optimizar para web**
+- [x] **Optimizar para web**
   - Convertir a WebP (soporte en navegadores modernos)
   - Resizing (thumbnail ~200px, display ~600px)
   - Lazy loading en componentes
   
-- [ ] **Integración**
+- [x] **Integración**
   - Agregar a `Hero.tsx` (fondo hero mejorado)
   - Agregar a `ServiciosGrid.tsx` (iconos en tarjetas)
   - Optimizar `Footer.tsx` con logo
   
-- [ ] **Tests visuales** — screenshot en mobile/desktop
+- [x] **Tests visuales** — screenshot en mobile/desktop
   
 **Archivos:** `public/images/`, componentes, Next.js Image optimization
 
 **Estimación:** 2 horas  
-**GitHub Issue:** #4
+**GitHub Issue:** #4  
+**Completado:** 2026-05-13
 
 ---
 
@@ -459,5 +461,5 @@ Antes de desplegar cambios:
 
 ---
 
-**Última actualización:** 2026-05-12 por Claude  
+**Última actualización:** 2026-05-13 por Claude  
 **Siguiente revisión:** Después de completar P0.1
