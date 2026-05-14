@@ -9,6 +9,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        montserrat: ["var(--font-montserrat)", "sans-serif"],
+        inter: ["var(--font-inter)", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -43,6 +47,11 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Sistema Indigo
+        "indigo-primary": "var(--indigo-primary)",
+        "indigo-btn": "var(--indigo-btn)",
+        "indigo-lavender": "var(--indigo-lavender)",
+        "indigo-tertiary": "var(--indigo-tertiary)",
       },
       borderRadius: {
         lg: "var(--radius)",
