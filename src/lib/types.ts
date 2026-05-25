@@ -53,3 +53,16 @@ export const PRECIOS: PrecioServicio[] = [
   { tipo: 'colchas', nombre: 'Colchas 2 plazas', precio: 14000, descripcion: '24-48 hrs' },
   { tipo: 'sabanas_ropa', nombre: 'Sábanas y ropa', precio: 8000, descripcion: 'Por cada 5 kg · 24 hrs' },
 ];
+
+export interface Admin {
+  email: string;
+  nombre: string;
+  activo: boolean;
+  creadoEn: string;
+}
+
+export interface UsuarioAdmin {
+  email: string;
+  nombre: string;
+  foto?: string;
+}

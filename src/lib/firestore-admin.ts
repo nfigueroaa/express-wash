@@ -61,3 +61,30 @@ export async function actualizarEstadoPedido(
     actualizadoEn: new Date().toISOString(),
   });
 }
+
+/**
+ * Verifica si un email está en la colección 'admins' y tiene activo: true.
+ * Si el campo 'activo' no existe, asume true (retrocompatibilidad).
+ */
+export async function verificarAdmin(email: string): Promise<boolean> {
+  const db = getDb();
+  const doc = await db.collection('admins').doc(email).get();
+  if (!doc.exists) return false;
+  const data = doc.data();
+  return data?.activo !== false; // true si activo no está definido o es true
+}
+
+/**
+ * Actualiza campos parciales de un pedido (estado y/o notas).
+ * Siempre actualiza actualizadoEn.
+ */
+export async function actualizarPedidoParcial(
+  id: string,
+  updates: Partial<Pick<Pedido, 'estado' | 'notas'>>,
+): Promise<void> {
+  const db = getDb();
+  await db.collection('pedidos').doc(id).update({
+    ...updates,
+    actualizadoEn: new Date().toISOString(),
+  });
+}
