@@ -72,6 +72,15 @@ export function Footer() {
           </span>{' '}
           · {new Date().getFullYear()}
         </p>
+        <p style={{ color: '#333', marginTop: '12px' }}>
+          <a
+            href="/admin/login"
+            className="transition-colors hover:opacity-80"
+            style={{ color: '#555', textDecoration: 'underline' }}
+          >
+            Panel de Administración
+          </a>
+        </p>
       </div>
     </footer>
   );
