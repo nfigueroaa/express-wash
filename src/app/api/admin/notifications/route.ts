@@ -3,6 +3,7 @@ import { verifySessionCookie } from '@/lib/auth';
 import { getNotifications, subscribe } from '@/lib/notifications';
 import { NextRequest, NextResponse } from 'next/server';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(request: NextRequest) {
   try {
     const userId = request.nextUrl.searchParams.get('userId');
