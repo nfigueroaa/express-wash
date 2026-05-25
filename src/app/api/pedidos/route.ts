@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { obtenerPedidos } from '@/lib/firestore-admin';
 
 /**
  * GET /api/pedidos
  * Retorna todos los pedidos ordenados por fecha de creación (más recientes primero)
  */
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     const pedidos = await obtenerPedidos();
     return NextResponse.json(pedidos);
