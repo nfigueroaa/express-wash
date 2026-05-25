@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers';
 import { getUserRole } from '@/lib/auth';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const cookieStore = cookies();
     const session = cookieStore.get('session')?.value;
@@ -24,8 +24,9 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ role });
-  } catch (error) {
-    console.error('Role validation error:', error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Role validation error:', errorMessage);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
