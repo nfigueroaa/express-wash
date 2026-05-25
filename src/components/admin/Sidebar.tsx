@@ -13,9 +13,15 @@ export function Sidebar({ usuario }: SidebarProps) {
   const router = useRouter();
 
   const handleLogout = async () => {
-    await fetch('/api/auth/session', { method: 'DELETE' });
+    try {
+      const res = await fetch('/api/auth/session', { method: 'DELETE' });
+      if (!res.ok) {
+        console.error('Logout failed:', res.status);
+      }
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
     router.push('/admin/login');
-    router.refresh();
   };
 
   const navItems = [
@@ -92,7 +98,7 @@ export function Sidebar({ usuario }: SidebarProps) {
               className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
               style={{ backgroundColor: '#2e3192', color: '#c0c1ff' }}
             >
-              {usuario.nombre[0].toUpperCase()}
+              {(usuario.nombre || usuario.email)[0].toUpperCase()}
             </div>
           )}
           <div className="overflow-hidden">
