@@ -1,9 +1,24 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { obtenerPedidos, actualizarEstadoPedido } from '@/lib/firestore';
 import { formatCLP } from '@/lib/utils';
 import type { Pedido, EstadoPedido } from '@/lib/types';
+
+// Funciones helper para llamar a los endpoints
+async function obtenerPedidos(): Promise<Pedido[]> {
+  const res = await fetch('/api/pedidos');
+  if (!res.ok) throw new Error('Error cargando pedidos');
+  return res.json();
+}
+
+async function actualizarEstadoPedido(id: string, estado: EstadoPedido): Promise<void> {
+  const res = await fetch(`/api/pedidos/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ estado }),
+  });
+  if (!res.ok) throw new Error('Error actualizando pedido');
+}
 
 const ESTADOS: EstadoPedido[] = ['pendiente', 'en_proceso', 'listo', 'entregado', 'cancelado'];
 

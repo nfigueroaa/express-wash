@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { crearPedido } from '@/lib/firestore';
+import { crearPedido } from '@/lib/firestore-admin';
 import type { Pedido } from '@/lib/types';
 
 export async function POST(request: NextRequest) {
