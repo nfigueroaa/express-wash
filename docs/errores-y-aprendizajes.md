@@ -280,6 +280,83 @@ Verificar siempre el mensaje de error exacto en los logs de Cloud Run antes de r
 
 ---
 
+## Chatbot Washi — Status Quo (2026-05-25)
+
+**El asistente Claude Haiku 4.5 está operativo y responde consultas básicas sobre Express Delivery Wash en tiempo real.**
+
+### Qué es Washi
+
+Un chatbot en vivo integrado en el sitio web de Express Delivery Wash, alimentado por el modelo Claude Haiku 4.5 de Anthropic. 
+Atiende preguntas frecuentes sin intervención humana y puede marcar conversaciones para escalar a un agente si es necesario.
+
+### Arquitectura
+
+**Endpoint:** `POST /api/chat`  
+**Modelo:** Claude Haiku 4.5 (fast inference, bajo costo)  
+**Respuesta:** JSON con estructura:
+```json
+{
+  "content": "Respuesta del chatbot aquí",
+  "escalado": false
+}
+```
+
+**Latencia:** ~1-2 segundos (incluye round-trip a Anthropic).
+
+**Integración:** El formulario de chat en la landing page envía mensajes al endpoint y renderiza respuestas en tiempo real.
+
+### Capacidades actuales
+
+- ✅ Responde preguntas sobre servicios (lavado, secado, planchado)
+- ✅ Informa precios y planes de suscripción
+- ✅ Explica cobertura geográfica (Santiago, 15 km de radio)
+- ✅ Brinda información sobre despacho y tiempos de entrega
+- ✅ Se presenta educadamente como "Washi", el asistente de Express Delivery Wash
+- ✅ Maneja conversaciones multiturno (context en cada request)
+
+### Entrenamiento actual: Mínimo
+
+**El chatbot utiliza solo un system prompt**, sin fine-tuning ni entrenamientos adicionales:
+
+- No hay contexto de productos almacenado
+- No hay acceso a órdenes pendientes del cliente
+- No hay integración con base de datos de servicios en vivo
+- No hay historial conversacional persistente (stateless por request)
+- Respuestas basadas enteramente en el prompt de sistema y el conocimiento general del modelo
+
+**Por qué Haiku y no Opus:** A este volumen de consultas (MVP sin tráfico masivo aún), 
+Haiku es suficiente. Costo ~10x menor, latencia comparable. Opus sería prematura optimización.
+
+### Limitaciones conocidas
+
+**No puede:**
+- Crear órdenes directamente (el formulario del sitio maneja CRUD)
+- Escalar automáticamente (necesita lógica manual para detectar intención de escalado)
+- Aprender de interacciones pasadas (sin fine-tuning ni feedback loop)
+- Acceder a datos del cliente o historial de órdenes
+- Validar disponibilidad de servicios en tiempo real
+
+**Respuestas genéricas:** Sin contexto personalizado, todas las respuestas son genéricas. 
+No hay diferencia si el usuario pregunta sobre un barrio específico vs. cobertura general.
+
+### Próximos entrenamientos (backlog)
+
+- [ ] **Contexto de productos:** Agregar lista oficial de servicios, precios actuales, términos y condiciones al system prompt
+- [ ] **Integración con órdenes:** Permitir consultas como "¿Cuándo llega mi pedido?" conectando a la API de pedidos
+- [ ] **Lógica de escalado:** Detectar automáticamente palabras clave ("hablar con soporte", "quiero cambiar mi orden") y marcar `escalado: true`
+- [ ] **Feedback loop:** Guardar preguntas frecuentes no respondidas satisfactoriamente para futuro fine-tuning
+- [ ] **Fine-tuning:** Entrenar con historial real de interacciones (si se alcanza volumen suficiente)
+- [ ] **Histórico persistente:** Guardar conversaciones en Firestore para análisis y mejora continua
+
+### Lección
+
+Un chatbot básico es mejor que ninguno. El modelo Haiku es suficiente para responder FAQs 
+en tiempo real sin latencias altas o costos significativos. El siguiente paso no es cambiar 
+de modelo (Opus sería desperdicio), sino agregar **contexto + escalado inteligente** para 
+manejar casos más complejos sin sobrecarga humana.
+
+---
+
 ## Por documentar (agregar conforme avanza el proyecto)
 
 - [ ] Costos reales al mes 1 vs estimación ($1.20/mes proyectado)
