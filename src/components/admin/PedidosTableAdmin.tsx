@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useState, useEffect, useCallback, useRef } from 'react';
+import { Fragment, useState, useEffect, useRef } from 'react';
 import { formatCLP } from '@/lib/utils';
 import type { Pedido, EstadoPedido } from '@/lib/types';
 import { DetalleModal } from './DetalleModal';
@@ -21,12 +21,12 @@ const ESTADO_COLOR: Record<EstadoPedido, string> = {
   cancelado: '#ef4444',
 };
 
-const INTERVALO_REFRESH_MS = 30_000; // 30 segundos
+interface PedidosTableAdminProps {
+  pedidos: Pedido[];
+  onRefresh: () => Promise<void>;
+}
 
-export function PedidosTableAdmin() {
-  const [pedidos, setPedidos] = useState<Pedido[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+export function PedidosTableAdmin({ pedidos, onRefresh }: PedidosTableAdminProps) {
   const [filtroEstado, setFiltroEstado] = useState<EstadoPedido | 'todos'>('todos');
   const [pedidoDetalle, setPedidoDetalle] = useState<Pedido | null>(null);
   const [notaAbierta, setNotaAbierta] = useState<string | null>(null); // id del pedido
@@ -36,34 +36,13 @@ export function PedidosTableAdmin() {
   const [ultimaActualizacion, setUltimaActualizacion] = useState<Date | null>(null);
   const [segundosDesdeUpdate, setSegundosDesdeUpdate] = useState(0);
 
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const clockRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Cargar pedidos desde la API
-  const cargar = useCallback(async () => {
-    try {
-      const res = await fetch('/api/pedidos');
-      if (!res.ok) throw new Error('Error HTTP: ' + res.status);
-      const data: Pedido[] = await res.json();
-      setPedidos(data);
-      setErrorMsg(null);
-      setUltimaActualizacion(new Date());
-      setSegundosDesdeUpdate(0);
-    } catch {
-      setErrorMsg('Error cargando pedidos. Verifica tu conexión.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Auto-refresh cada 30 segundos
+  // Detectar cambios en pedidos y actualizar ultimaActualizacion
   useEffect(() => {
-    cargar();
-    intervalRef.current = setInterval(cargar, INTERVALO_REFRESH_MS);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [cargar]);
+    setUltimaActualizacion(new Date());
+    setSegundosDesdeUpdate(0);
+  }, [pedidos]);
 
   // Reloj de "actualizado hace X segundos"
   useEffect(() => {
@@ -91,7 +70,7 @@ export function PedidosTableAdmin() {
       });
       if (!res.ok) throw new Error();
       mostrarToast('Estado actualizado ✓');
-      await cargar();
+      await onRefresh();
     } catch {
       mostrarToast('Error al actualizar estado');
     }
@@ -110,7 +89,7 @@ export function PedidosTableAdmin() {
       mostrarToast('Nota guardada ✓');
       setNotaAbierta(null);
       setNotaTexto('');
-      await cargar();
+      await onRefresh();
     } catch {
       mostrarToast('Error al guardar nota');
     } finally {
@@ -133,31 +112,6 @@ export function PedidosTableAdmin() {
     pedidos.filter((p) => p.estado === estado).length;
 
   // --- RENDER ---
-
-  if (loading) {
-    return (
-      <div className="text-center py-24 animate-pulse" style={{ color: '#555' }}>
-        Cargando pedidos...
-      </div>
-    );
-  }
-
-  if (errorMsg) {
-    return (
-      <div className="text-center py-24">
-        <div className="mb-4 text-sm" style={{ color: '#ef4444' }}>
-          {errorMsg}
-        </div>
-        <button
-          onClick={cargar}
-          className="px-4 py-2 rounded text-sm font-medium"
-          style={{ backgroundColor: '#2e3192', color: '#c0c1ff' }}
-        >
-          Reintentar
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div>
