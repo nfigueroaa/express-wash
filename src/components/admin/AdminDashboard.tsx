@@ -78,8 +78,8 @@ export function AdminDashboard() {
       {/* Stats Cards */}
       <StatsCards pedidos={pedidos} />
 
-      {/* Tabla de Pedidos */}
-      <PedidosTableAdmin pedidos={pedidos} onRefresh={fetchPedidos} />
+      {/* Tabla de Pedidos - Ahora PedidosTableAdmin maneja su propio fetch y refresh */}
+      <PedidosTableAdmin />
     </div>
   );
 }

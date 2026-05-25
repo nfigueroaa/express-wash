@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useState, useEffect, useRef } from 'react';
+import { Fragment, useState, useEffect, useCallback, useRef } from 'react';
 import { formatCLP } from '@/lib/utils';
 import type { Pedido, EstadoPedido } from '@/lib/types';
 import { DetalleModal } from './DetalleModal';
@@ -21,12 +21,11 @@ const ESTADO_COLOR: Record<EstadoPedido, string> = {
   cancelado: '#ef4444',
 };
 
-interface PedidosTableAdminProps {
-  pedidos: Pedido[];
-  onRefresh?: () => Promise<void>;
-}
+const INTERVALO_REFRESH_MS = 30_000; // 30 segundos
 
-export function PedidosTableAdmin({ pedidos: pedidosParam, onRefresh }: PedidosTableAdminProps) {
+export function PedidosTableAdmin() {
+  const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [filtroEstado, setFiltroEstado] = useState<EstadoPedido | 'todos'>('todos');
   const [pedidoDetalle, setPedidoDetalle] = useState<Pedido | null>(null);
@@ -37,27 +36,34 @@ export function PedidosTableAdmin({ pedidos: pedidosParam, onRefresh }: PedidosT
   const [ultimaActualizacion, setUltimaActualizacion] = useState<Date | null>(null);
   const [segundosDesdeUpdate, setSegundosDesdeUpdate] = useState(0);
 
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const clockRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Manejar refresh desde el parent
-  const manejarRefresh = async () => {
-    if (onRefresh) {
-      try {
-        await onRefresh();
-        setErrorMsg(null);
-        setUltimaActualizacion(new Date());
-        setSegundosDesdeUpdate(0);
-      } catch {
-        setErrorMsg('Error al actualizar pedidos.');
-      }
+  // Cargar pedidos desde la API
+  const cargar = useCallback(async () => {
+    try {
+      const res = await fetch('/api/pedidos');
+      if (!res.ok) throw new Error('Error HTTP: ' + res.status);
+      const data: Pedido[] = await res.json();
+      setPedidos(data);
+      setErrorMsg(null);
+      setUltimaActualizacion(new Date());
+      setSegundosDesdeUpdate(0);
+    } catch {
+      setErrorMsg('Error cargando pedidos. Verifica tu conexión.');
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
 
-  // Inicializar ultimaActualizacion y actualizar cuando cambien pedidosParam
+  // Auto-refresh cada 30 segundos
   useEffect(() => {
-    setUltimaActualizacion(new Date());
-    setSegundosDesdeUpdate(0);
-  }, [pedidosParam]);
+    cargar();
+    intervalRef.current = setInterval(cargar, INTERVALO_REFRESH_MS);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [cargar]);
 
   // Reloj de "actualizado hace X segundos"
   useEffect(() => {
@@ -85,7 +91,7 @@ export function PedidosTableAdmin({ pedidos: pedidosParam, onRefresh }: PedidosT
       });
       if (!res.ok) throw new Error();
       mostrarToast('Estado actualizado ✓');
-      await manejarRefresh();
+      await cargar();
     } catch {
       mostrarToast('Error al actualizar estado');
     }
@@ -104,7 +110,7 @@ export function PedidosTableAdmin({ pedidos: pedidosParam, onRefresh }: PedidosT
       mostrarToast('Nota guardada ✓');
       setNotaAbierta(null);
       setNotaTexto('');
-      await manejarRefresh();
+      await cargar();
     } catch {
       mostrarToast('Error al guardar nota');
     } finally {
@@ -120,14 +126,21 @@ export function PedidosTableAdmin({ pedidos: pedidosParam, onRefresh }: PedidosT
 
   const pedidosFiltrados =
     filtroEstado === 'todos'
-      ? pedidosParam
-      : pedidosParam.filter((p) => p.estado === filtroEstado);
+      ? pedidos
+      : pedidos.filter((p) => p.estado === filtroEstado);
 
   const countEstado = (estado: EstadoPedido) =>
-    pedidosParam.filter((p) => p.estado === estado).length;
+    pedidos.filter((p) => p.estado === estado).length;
 
   // --- RENDER ---
 
+  if (loading) {
+    return (
+      <div className="text-center py-24 animate-pulse" style={{ color: '#555' }}>
+        Cargando pedidos...
+      </div>
+    );
+  }
 
   if (errorMsg) {
     return (
@@ -136,7 +149,7 @@ export function PedidosTableAdmin({ pedidos: pedidosParam, onRefresh }: PedidosT
           {errorMsg}
         </div>
         <button
-          onClick={manejarRefresh}
+          onClick={cargar}
           className="px-4 py-2 rounded text-sm font-medium"
           style={{ backgroundColor: '#2e3192', color: '#c0c1ff' }}
         >
@@ -179,7 +192,7 @@ export function PedidosTableAdmin({ pedidos: pedidosParam, onRefresh }: PedidosT
                 : { backgroundColor: 'transparent', color: '#555', borderColor: '#1a1a2e' }
             }
           >
-            Todos ({pedidosParam.length})
+            Todos ({pedidos.length})
           </button>
 
           {/* Chips por estado */}
