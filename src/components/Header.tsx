@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export function Header() {
   return (
@@ -23,7 +24,8 @@ export function Header() {
         </Link>
 
         {/* Right side */}
-        <nav className="flex items-center gap-6">
+        <nav className="flex items-center gap-4">
+          <ThemeToggle />
           <Link
             href="/admin/login"
             className="text-sm font-semibold px-4 py-2 rounded-lg transition-colors hover:opacity-80"
