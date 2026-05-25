@@ -217,6 +217,69 @@ es tu amiga, pero duplicados son tu enemiga.
 
 ---
 
+## Error 8: Firebase Client SDK vs Admin SDK en Cloud Run (GRPC incompatibility)
+
+**Qué se intentó primero:**
+Usar el Firebase Client SDK (`firebase/firestore`) desde el servidor de Next.js (API routes).
+
+**Por qué no funcionó:**
+El Client SDK usa conexiones GRPC persistentes y long-lived. Cloud Run es serverless y escala a cero,
+terminando conexiones idle. Resultado: `GrpcConnection RPC 'Write' stream error` en los logs y
+HTTP 504 timeout en cualquier request que escriba a Firestore.
+
+```
+// ❌ Client SDK — falla silenciosamente en Cloud Run
+import { getFirestore, addDoc, collection } from 'firebase/firestore';
+```
+
+**La solución:**
+Firebase Admin SDK usa HTTP REST (stateless), totalmente compatible con serverless.
+En Cloud Run, usa Application Default Credentials automáticamente (sin configuración extra).
+
+```typescript
+// ✅ Admin SDK — funciona en Cloud Run
+import * as admin from 'firebase-admin';
+
+if (!admin.apps.length) {
+  admin.initializeApp({ projectId: 'tu-project-id' });
+}
+const db = admin.firestore();
+await db.collection('pedidos').add(pedido); // HTTP REST, sin GRPC
+```
+
+**Además:** Migrar acceso a Firestore desde componentes React (`'use client'`) a endpoints HTTP:
+- Antes: `PedidosTable` llamaba directamente a Firestore con Client SDK
+- Después: `PedidosTable` llama a `GET /api/pedidos` y `PATCH /api/pedidos/:id`
+
+**Lección:**
+En Next.js con Cloud Run, usa Admin SDK para acceso a Firestore desde API routes (servidor).
+El Client SDK es para aplicaciones browser-only con Firebase Hosting, no para serverless.
+
+**Fix:** Commits `5f91645`, `39982b5`, `2409604`
+
+---
+
+## Error 9: Saldo insuficiente en Anthropic API
+
+**Síntoma:**
+El chatbot retorna HTTP 500. Los logs de Cloud Run muestran:
+```
+[chat] Claude API error 400: Your credit balance is too low to access the Anthropic API.
+```
+
+**Confusión inicial:**
+El API key era válido (no HTTP 401), pero la cuenta no tenía créditos activos.
+El error `400` se confundió con un problema de configuración.
+
+**La solución:**
+Agregar créditos en https://console.anthropic.com/account/billing o activar plan de pago.
+
+**Lección:**
+Un HTTP 400 de Anthropic puede ser por saldo, no necesariamente por key inválido.
+Verificar siempre el mensaje de error exacto en los logs de Cloud Run antes de regenerar keys.
+
+---
+
 ## Por documentar (agregar conforme avanza el proyecto)
 
 - [ ] Costos reales al mes 1 vs estimación ($1.20/mes proyectado)
