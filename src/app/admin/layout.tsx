@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { verifySessionCookie } from '@/lib/auth';
 import { Sidebar } from '@/components/admin/Sidebar';
@@ -8,6 +8,15 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const headersList = headers();
+  const isLoginPage = headersList.get('x-is-login-page') === 'true';
+
+  // Si estamos en la página de login, renderizar sin verificación de sesión
+  if (isLoginPage) {
+    return children;
+  }
+
+  // Para otras rutas bajo /admin, verificar sesión
   const cookieStore = cookies();
   const session = cookieStore.get('session')?.value;
 

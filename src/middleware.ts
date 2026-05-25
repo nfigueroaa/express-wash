@@ -9,9 +9,16 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const session = request.cookies.get('session')?.value;
 
+  const response = NextResponse.next();
+
+  // Agregar header personalizado indicando si estamos en /admin/login
+  // para que el layout pueda decidir si redirigir o no
+  const isLoginPage = pathname.endsWith('/login');
+  response.headers.set('x-is-login-page', isLoginPage ? 'true' : 'false');
+
   // Si está en /admin/login, SIEMPRE dejar pasar sin redirecciones
-  if (pathname.endsWith('/login')) {
-    return NextResponse.next();
+  if (isLoginPage) {
+    return response;
   }
 
   // Sin cookie → redirigir a login
@@ -19,7 +26,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/admin/login', request.url));
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
