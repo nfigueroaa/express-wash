@@ -31,6 +31,9 @@ export async function GET(request: NextRequest) {
       'Connection': 'keep-alive',
     });
 
+    // Use request.signal for cleanup
+    const signal = request.signal;
+
     const stream = new ReadableStream({
       start(controller) {
         // Send existing notifications
@@ -54,7 +57,7 @@ export async function GET(request: NextRequest) {
           controller.close();
         };
 
-        request.signal.addEventListener('abort', closeHandler);
+        signal.addEventListener('abort', closeHandler);
       },
     });
 
