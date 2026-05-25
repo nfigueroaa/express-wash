@@ -33,3 +33,30 @@ export async function verifySessionCookie(
     return null;
   }
 }
+
+/**
+ * Obtiene el rol del usuario desde Firestore.
+ * Retorna el rol del usuario o 'operario' como default.
+ */
+export async function getUserRole(
+  session: string,
+): Promise<'admin' | 'supervisor' | 'operario' | null> {
+  try {
+    // Reutiliza la inicialización de firestore-admin si ya ocurrió
+    if (!admin.apps.length) {
+      admin.initializeApp({ projectId: 'expresswash-prod-202605112332' });
+    }
+
+    const decodedToken = await admin.auth().verifySessionCookie(session);
+    const userDoc = await admin
+      .firestore()
+      .collection('admins')
+      .doc(decodedToken.uid)
+      .get();
+
+    const userData = userDoc.data();
+    return userData?.role || 'operario'; // Default to operario if not specified
+  } catch {
+    return null;
+  }
+}
