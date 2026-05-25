@@ -59,8 +59,9 @@ export async function GET(request: NextRequest) {
     });
 
     return new NextResponse(stream, { headers: responseHeaders });
-  } catch (error) {
-    console.error('Notifications endpoint error:', error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Notifications endpoint error:', errorMessage);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

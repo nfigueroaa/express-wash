@@ -5,14 +5,14 @@ export interface Notification {
   message: string;
   timestamp: Date;
   read: boolean;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
 }
 
 export interface NotificationEvent {
   type: 'new_order' | 'order_status' | 'system';
   title: string;
   message: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
 }
 
 // In-memory queue for notifications (in production, use Redis or similar)
