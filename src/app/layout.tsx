@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter, Montserrat } from 'next/font/google';
+import { Header } from '@/components/Header';
 import './globals.css';
 
 const inter = Inter({
@@ -39,6 +40,7 @@ export default function RootLayout({
         className={`${inter.variable} ${montserrat.variable} font-inter antialiased`}
         style={{ backgroundColor: 'var(--indigo-bg)', color: '#ffffff' }}
       >
+        <Header />
         {children}
       </body>
     </html>
