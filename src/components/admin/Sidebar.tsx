@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { NotificationsCenter } from '@/components/admin/NotificationsCenter';
 import type { UsuarioAdmin } from '@/lib/types';
 
 interface SidebarProps {
@@ -45,6 +46,11 @@ export function Sidebar({ usuario }: SidebarProps) {
         <div className="text-xs mt-0.5" style={{ color: '#555' }}>
           Panel Admin
         </div>
+      </div>
+
+      {/* Notifications */}
+      <div className="px-2 mb-2">
+        <NotificationsCenter userId={usuario.email} />
       </div>
 
       {/* Navegación */}
