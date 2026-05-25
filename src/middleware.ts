@@ -9,21 +9,19 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const session = request.cookies.get('session')?.value;
 
-  const isLoginPage = pathname === '/admin/login';
-
-  // Sin cookie → redirigir a login (excepto si ya está en login)
-  if (!session && !isLoginPage) {
-    return NextResponse.redirect(new URL('/admin/login', request.url));
+  // Si está en /admin/login, SIEMPRE dejar pasar sin redirecciones
+  if (pathname.endsWith('/login')) {
+    return NextResponse.next();
   }
 
-  // Con cookie → si está en login, redirigir al panel
-  if (session && isLoginPage) {
-    return NextResponse.redirect(new URL('/admin', request.url));
+  // Sin cookie → redirigir a login
+  if (!session) {
+    return NextResponse.redirect(new URL('/admin/login', request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/admin/((?!login).*)?'],
+  matcher: ['/admin/:path*'],
 };
