@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { actualizarEstadoPedido } from '@/lib/firestore-admin';
+import { actualizarPedidoParcial } from '@/lib/firestore-admin';
 import type { EstadoPedido } from '@/lib/types';
 
 interface RouteParams {
@@ -10,25 +10,36 @@ interface RouteParams {
 
 /**
  * PATCH /api/pedidos/:id
- * Actualiza el estado de un pedido
- * Body: { "estado": "pendiente" | "en_proceso" | "listo" | "entregado" | "cancelado" }
+ * Actualiza estado y/o notas de un pedido.
+ * Body: { "estado"?: EstadoPedido, "notas"?: string }
+ * Al menos uno de los dos campos debe estar presente.
  */
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = params;
     const body = await request.json();
-    const { estado } = body as { estado: EstadoPedido };
+    const { estado, notas } = body as { estado?: EstadoPedido; notas?: string };
 
-    if (!estado) {
-      return NextResponse.json({ error: 'Estado requerido' }, { status: 400 });
+    if (estado === undefined && notas === undefined) {
+      return NextResponse.json(
+        { error: 'Se requiere al menos "estado" o "notas"' },
+        { status: 400 },
+      );
     }
 
-    const estadosValidos = ['pendiente', 'en_proceso', 'listo', 'entregado', 'cancelado'];
-    if (!estadosValidos.includes(estado)) {
+    const estadosValidos: EstadoPedido[] = [
+      'pendiente', 'en_proceso', 'listo', 'entregado', 'cancelado',
+    ];
+
+    if (estado !== undefined && !estadosValidos.includes(estado)) {
       return NextResponse.json({ error: 'Estado inválido' }, { status: 400 });
     }
 
-    await actualizarEstadoPedido(id, estado);
+    const updates: Partial<{ estado: EstadoPedido; notas: string }> = {};
+    if (estado !== undefined) updates.estado = estado;
+    if (notas !== undefined) updates.notas = notas;
+
+    await actualizarPedidoParcial(id, updates);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('[pedidos PATCH] Error:', error);
