@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  poweredByHeader: false, // Eliminar X-Powered-By: Next.js (info disclosure)
   transpilePackages: ['leaflet', 'react-leaflet'],
   images: {
     remotePatterns: [
