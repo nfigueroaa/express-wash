@@ -70,8 +70,8 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-color: #000000;
-    color: #ffffff;
+    background-color: var(--indigo-bg);
+    color: var(--indigo-primary);
   }
 }
 
