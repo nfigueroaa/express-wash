@@ -116,7 +116,7 @@ export function Hero() {
               🚚
             </div>
             <div>
-              <p className="text-sm font-semibold text-white">Recogida Express</p>
+              <p className="text-sm font-semibold" style={{ color: 'var(--indigo-primary)' }}>Recogida Express</p>
               <p className="text-xs" style={{ color: 'var(--indigo-text-faint)' }}>
                 En menos de 60 min
               </p>

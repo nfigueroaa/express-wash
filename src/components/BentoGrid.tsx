@@ -20,8 +20,8 @@ export function BentoGrid() {
             Cuidado Especializado
           </span>
           <h2
-            className="font-montserrat text-3xl md:text-4xl font-bold text-white mb-3"
-            style={{ letterSpacing: '-0.01em' }}
+            className="font-montserrat text-3xl md:text-4xl font-bold mb-3"
+            style={{ letterSpacing: '-0.01em', color: 'var(--indigo-primary)' }}
           >
             Para cada tipo de prenda
           </h2>

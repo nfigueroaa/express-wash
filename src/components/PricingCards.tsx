@@ -62,8 +62,8 @@ export function PricingCards() {
             Precios
           </span>
           <h2
-            className="font-montserrat text-3xl md:text-4xl font-bold text-white mb-3"
-            style={{ letterSpacing: '-0.01em' }}
+            className="font-montserrat text-3xl md:text-4xl font-bold mb-3"
+            style={{ letterSpacing: '-0.01em', color: 'var(--indigo-primary)' }}
           >
             Precios Transparentes
           </h2>
@@ -98,7 +98,7 @@ export function PricingCards() {
             >
               {/* Nombre + badge */}
               <div className="flex items-start justify-between mb-2">
-                <h3 className="font-montserrat text-base font-semibold text-white">
+                <h3 className="font-montserrat text-base font-semibold" style={{ color: 'var(--indigo-primary)' }}>
                   {plan.name}
                 </h3>
                 {plan.featured && (
@@ -113,7 +113,7 @@ export function PricingCards() {
 
               {/* Precio */}
               <div className="mt-3 mb-6">
-                <span className="text-3xl font-bold text-white">{plan.price}</span>
+                <span className="text-3xl font-bold" style={{ color: 'var(--indigo-primary)' }}>{plan.price}</span>
                 <span
                   className="text-sm ml-1"
                   style={{ color: 'var(--indigo-text-faint)' }}

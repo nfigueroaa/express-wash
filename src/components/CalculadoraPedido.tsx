@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PRECIOS } from '@/lib/types';
 import { calcularDescuento, calcularDespacho, formatCLP } from '@/lib/utils';
@@ -30,38 +29,45 @@ export function CalculadoraPedido() {
     setCantidades((prev) => ({ ...prev, [tipo]: Math.max(0, (prev[tipo] || 0) - 1) }));
 
   return (
-    <section id="calculadora" className="py-20 px-4 bg-black">
+    <section id="calculadora" className="py-20 px-4" style={{ backgroundColor: 'var(--indigo-bg)' }}>
       <div className="max-w-xl mx-auto">
         <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: 'var(--indigo-primary)' }}>
             Calcula tu pedido
           </h2>
-          <p className="text-gray-400">
+          <p style={{ color: 'var(--indigo-text-muted)' }}>
             El despacho real varía según tu dirección. Este es un estimado.
           </p>
         </div>
 
-        <Card className="bg-gray-900 border-gray-800">
-          <CardContent className="pt-6">
+        <div
+          className="rounded-xl p-6"
+          style={{
+            backgroundColor: 'var(--indigo-surface)',
+            border: '1px solid var(--indigo-border)',
+          }}
+        >
             <div className="space-y-4">
               {PRECIOS.map((s) => (
                 <div
                   key={s.tipo}
-                  className="flex items-center justify-between py-3 border-b border-gray-800 last:border-0"
+                  className="flex items-center justify-between py-3 last:border-0"
+                  style={{ borderBottom: '1px solid var(--indigo-border)' }}
                 >
                   <div>
-                    <p className="text-white font-medium">{s.nombre}</p>
-                    <p className="text-gray-500 text-sm">{formatCLP(s.precio)}</p>
+                    <p className="font-medium" style={{ color: 'var(--indigo-primary)' }}>{s.nombre}</p>
+                    <p className="text-sm" style={{ color: 'var(--indigo-text-muted)' }}>{formatCLP(s.precio)}</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => decrementar(s.tipo)}
-                      className="w-8 h-8 rounded-full bg-gray-700 text-white hover:bg-gray-600 transition-colors flex items-center justify-center font-bold"
+                      className="w-8 h-8 rounded-full hover:opacity-80 transition-opacity flex items-center justify-center font-bold"
+                      style={{ backgroundColor: 'var(--indigo-surface-2)', color: 'var(--indigo-primary)', border: '1px solid var(--indigo-border)' }}
                       aria-label={`Quitar ${s.nombre}`}
                     >
                       −
                     </button>
-                    <span className="text-white w-5 text-center font-semibold">
+                    <span className="w-5 text-center font-semibold" style={{ color: 'var(--indigo-primary)' }}>
                       {cantidades[s.tipo] || 0}
                     </span>
                     <button
@@ -78,26 +84,26 @@ export function CalculadoraPedido() {
             </div>
 
             {subtotal > 0 && (
-              <div className="mt-6 space-y-2 pt-4 border-t border-gray-800">
-                <div className="flex justify-between text-gray-400 text-sm">
+              <div className="mt-6 space-y-2 pt-4" style={{ borderTop: '1px solid var(--indigo-border)' }}>
+                <div className="flex justify-between text-sm" style={{ color: 'var(--indigo-text-muted)' }}>
                   <span>Subtotal</span>
                   <span>{formatCLP(subtotal)}</span>
                 </div>
                 {descuento > 0 && (
-                  <div className="flex justify-between text-green-400 text-sm">
+                  <div className="flex justify-between text-green-500 text-sm">
                     <span>Descuento por volumen</span>
                     <span>−{formatCLP(descuento)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-gray-400 text-sm">
+                <div className="flex justify-between text-sm" style={{ color: 'var(--indigo-text-muted)' }}>
                   <span>Despacho estimado</span>
-                  <span className={despacho === 0 ? 'text-green-400 font-semibold' : ''}>
+                  <span className={despacho === 0 ? 'text-green-500 font-semibold' : ''}>
                     {despacho === 0 ? '¡GRATIS!' : formatCLP(despacho)}
                   </span>
                 </div>
-                <div className="flex justify-between text-xl font-bold pt-3 border-t border-gray-700">
-                  <span className="text-white">Total estimado</span>
-                  <span style={{ color: '#00BCD4' }}>{formatCLP(total)}</span>
+                <div className="flex justify-between text-xl font-bold pt-3" style={{ borderTop: '1px solid var(--indigo-border)', color: 'var(--indigo-primary)' }}>
+                  <span>Total estimado</span>
+                  <span style={{ color: 'var(--indigo-tertiary)' }}>{formatCLP(total)}</span>
                 </div>
 
                 <Link href="/pedido" className="block mt-5">
@@ -112,12 +118,11 @@ export function CalculadoraPedido() {
             )}
 
             {subtotal === 0 && (
-              <p className="text-gray-600 text-sm text-center mt-4">
+              <p className="text-sm text-center mt-4" style={{ color: 'var(--indigo-text-faint)' }}>
                 Selecciona items para ver el precio estimado
               </p>
             )}
-          </CardContent>
-        </Card>
+        </div>
       </div>
     </section>
   );

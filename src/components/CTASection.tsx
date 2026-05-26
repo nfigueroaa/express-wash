@@ -10,8 +10,8 @@ export function CTASection() {
     >
       <div className="max-w-2xl mx-auto flex flex-col items-center gap-6">
         <h2
-          className="font-montserrat text-4xl md:text-5xl font-bold text-white leading-tight"
-          style={{ letterSpacing: '-0.02em' }}
+          className="font-montserrat text-4xl md:text-5xl font-bold leading-tight"
+          style={{ letterSpacing: '-0.02em', color: 'var(--indigo-primary)' }}
         >
           ¿Listo para liberar tu tiempo?
         </h2>

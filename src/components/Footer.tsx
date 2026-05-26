@@ -7,8 +7,8 @@ export function Footer() {
     <footer
       className="border-t py-10 px-6 md:px-16"
       style={{
-        backgroundColor: '#050508',
-        borderColor: 'var(--indigo-border-2)',
+        backgroundColor: 'var(--indigo-surface)',
+        borderColor: 'var(--indigo-border)',
       }}
     >
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
@@ -19,7 +19,7 @@ export function Footer() {
           >
             Express Delivery Wash
           </h3>
-          <p className="text-sm leading-relaxed" style={{ color: '#444' }}>
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--indigo-text-muted)' }}>
             Lavandería a domicilio en Santiago, Chile.
             <br />
             Retiro y entrega en 24–48 horas.
@@ -27,10 +27,10 @@ export function Footer() {
         </div>
 
         <div>
-          <h4 className="font-semibold text-white mb-3 font-montserrat text-sm">
+          <h4 className="font-semibold mb-3 font-montserrat text-sm" style={{ color: 'var(--indigo-primary)' }}>
             Horarios
           </h4>
-          <p className="text-sm leading-relaxed" style={{ color: '#444' }}>
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--indigo-text-muted)' }}>
             Lunes a Viernes: 8:00 – 20:00
             <br />
             Sábado: 9:00 – 17:00
@@ -40,7 +40,7 @@ export function Footer() {
         </div>
 
         <div>
-          <h4 className="font-semibold text-white mb-3 font-montserrat text-sm">
+          <h4 className="font-semibold mb-3 font-montserrat text-sm" style={{ color: 'var(--indigo-primary)' }}>
             Contacto
           </h4>
           <a
@@ -52,7 +52,7 @@ export function Footer() {
           >
             💬 WhatsApp (solo mensajes)
           </a>
-          <p className="text-sm" style={{ color: '#444' }}>
+          <p className="text-sm" style={{ color: 'var(--indigo-text-muted)' }}>
             Cobertura: 15 km desde Santiago centro
           </p>
         </div>
@@ -60,14 +60,14 @@ export function Footer() {
 
       <div
         className="text-center text-xs pt-6 border-t space-y-1"
-        style={{ borderColor: '#111' }}
+        style={{ borderColor: 'var(--indigo-border)' }}
       >
-        <p style={{ color: '#222' }}>
+        <p style={{ color: 'var(--indigo-text-muted)' }}>
           © {new Date().getFullYear()} Express Delivery Wash · Santiago, Chile
         </p>
-        <p style={{ color: '#333' }}>
+        <p style={{ color: 'var(--indigo-text-muted)' }}>
           Desarrollada por{' '}
-          <span className="font-semibold" style={{ color: '#444' }}>
+          <span className="font-semibold" style={{ color: 'var(--indigo-primary-dim)' }}>
             Nelson Figueroa Albarrán
           </span>{' '}
           · {new Date().getFullYear()}

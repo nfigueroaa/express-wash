@@ -44,8 +44,8 @@ export function FeaturesSection() {
               Por qué elegirnos
             </span>
             <h2
-              className="font-montserrat text-3xl md:text-4xl font-bold text-white leading-tight"
-              style={{ letterSpacing: '-0.01em' }}
+              className="font-montserrat text-3xl md:text-4xl font-bold leading-tight"
+              style={{ letterSpacing: '-0.01em', color: 'var(--indigo-primary)' }}
             >
               La pureza tecnológica<br />de Express Wash
             </h2>
@@ -61,7 +61,8 @@ export function FeaturesSection() {
               </div>
               <div>
                 <h3
-                  className="font-montserrat text-base font-semibold text-white mb-1"
+                  className="font-montserrat text-base font-semibold mb-1"
+                  style={{ color: 'var(--indigo-primary)' }}
                 >
                   {feature.title}
                 </h3>
