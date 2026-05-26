@@ -32,12 +32,16 @@
 
 | Feature | Descripción |
 |---------|-------------|
-| 🏠 **Landing Page Dark+Indigo** | Hero split 2 columnas, BentoGrid, FeaturesSection, PricingCards (3 planes), CTASection — Unsplash + Montserrat 600/700 |
-| 📦 **Formulario de Pedido** | Geocoding con Nominatim, mapa Leaflet, cálculo de despacho, integración calculadora |
-| 🤖 **Chatbot IA (Washi)** | Claude Haiku 4.5, FAQ completa, escalación automática a email |
-| 📊 **Panel Admin** | Tabla de pedidos con filtros y cambio de estado en tiempo real |
-| 📧 **Notificaciones** | Email automático al dueño vía EmailJS en cada pedido nuevo |
+| 🏠 **Landing Page Dark+Indigo** | Hero split 2 columnas, BentoGrid, FeaturesSection, PricingCards (3 planes seleccionables), CTASection |
+| 🌗 **Dark/Light Mode** | Toggle en Header con persistencia en localStorage, CSS variables completas |
+| 📦 **Formulario de Pedido** | Geocoding con Nominatim, mapa Leaflet, cálculo de despacho y descuentos |
+| 🤖 **Chatbot IA (Washi)** | Claude Haiku 4.5, FAQ completa, escalación automática por keywords |
+| 📊 **Panel Admin** | Tabla de pedidos con filtros, cambio de estado, detalle modal |
+| 👥 **Sistema de Roles** | admin / supervisor / operario — RoleGuard protege rutas por permiso |
+| 🔔 **Notificaciones SSE** | Stream en tiempo real para admin panel (Server-Sent Events) |
+| 📧 **Notificaciones Email** | Email automático al dueño vía EmailJS en cada pedido nuevo |
 | 🗺️ **Mapas** | Leaflet + OpenStreetMap (sin API keys, 100% gratuito) |
+| 🔒 **Seguridad** | 6 headers HTTP, CSP completo, rate limiting por IP, precios validados server-side |
 
 ---
 
@@ -48,7 +52,10 @@
 | **Frontend** | Next.js 14 (App Router) · TypeScript · Tailwind CSS · shadcn/ui |
 | **Tipografía** | Montserrat 600/700 (headers) · Inter 400/500/600 (body) — Google Fonts |
 | **Imágenes** | Unsplash (remotePatterns en next.config.js) |
-| **Base datos** | Firebase Firestore (client SDK, sin Admin SDK) |
+| **Base datos** | Firebase Firestore (Admin SDK en server, Client SDK en browser para auth) |
+| **Auth** | Firebase Auth (Google Sign-In) + session cookie httpOnly 5 días |
+| **Roles** | admin / supervisor / operario — gestionados en colección Firestore `admins` |
+| **Seguridad** | CSP, HSTS, X-Frame-Options, rate limiting in-memory por IP, precios server-side |
 | **Mapas** | Leaflet + OpenStreetMap + Nominatim geocoding |
 | **IA** | Claude Haiku 4.5 via Anthropic API (fetch directo) |
 | **Email** | EmailJS (200 emails/mes gratis) |
@@ -331,5 +338,5 @@ Ver [ROADMAP.md](ROADMAP.md) para detalles completos de todas las 13 mejoras pla
 - **Email:** [tu-email@example.com](mailto:hola@expressdeliverywash.cl)
 - **WhatsApp:** [+56 9 4274 9703](https://wa.me/56942749703)
 
-**Última actualización:** 2026-05-13 (Dark+Indigo Redesign)  
-**Versión:** 1.0.0-MVP (P1.1 ✅ Completado)
+**Última actualización:** 2026-05-26 (Security Sprint + Dark/Light Mode + Roles)  
+**Versión:** 1.2.0 (P1.2 ✅ Completado)

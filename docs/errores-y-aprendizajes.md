@@ -357,6 +357,172 @@ manejar casos más complejos sin sobrecarga humana.
 
 ---
 
+---
+
+## Sprint de Seguridad (2026-05-26) — 5 Errores, 5 Fixes
+
+---
+
+## Error 10: Auth bypass crítico en /api/pedidos
+
+**Qué se intentó primero:**
+Durante el MVP, `/api/pedidos` se dejó sin autenticación para desarrollo rápido. El plan era "protegerlo después".
+
+**Por qué fue grave:**
+La ruta GET `/api/pedidos` era completamente pública. Cualquier persona con la URL podía obtener todos los pedidos de todos los clientes: nombres completos, teléfonos, direcciones domiciliarias. Una violación directa de datos personales.
+
+**La solución:**
+```typescript
+export async function GET() {
+  const cookieStore = cookies();
+  const session = cookieStore.get('session')?.value;
+  if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+  const usuario = await verifySessionCookie(session);
+  if (!usuario) return NextResponse.json({ error: 'Sesión inválida' }, { status: 401 });
+  return NextResponse.json(await obtenerPedidos());
+}
+```
+
+**Aprendizaje:**
+"Protegerlo después" es el error de seguridad más común. Cada endpoint que expone datos de usuarios debe tener auth desde el primer commit.
+
+**Tiempo perdido:** 0 (detectado en auditoría proactiva, no en producción)
+
+---
+
+## Error 11: ESLint bloqueó dos builds seguidos por un parámetro unused
+
+**Qué se intentó primero:**
+Al agregar auth al GET de `/api/pedidos`, no necesitaba el parámetro `request`. Primer intento: renombrarlo a `_request` (prefijo underscore, convención estándar de TypeScript).
+
+**Por qué no funcionó:**
+La configuración de ESLint del proyecto tiene `@typescript-eslint/no-unused-vars` sin excepción para variables con `_`. También rechazó el import de `NextRequest` que quedó huérfano.
+
+**Dos commits fallidos seguidos:**
+```
+71335ae fix: rename unused request param to _request  ← ❌ ESLint: '_request' is defined but never used
+dd9d260 fix: remove unused NextRequest import          ← ✅
+```
+
+**La solución correcta:**
+Eliminar tanto el parámetro como el import de `NextRequest` por completo. `cookies()` de `next/headers` no lo necesita.
+
+**Aprendizaje:**
+Antes de agregar un parámetro a una function de API en Next.js, verificar si realmente se usa. Si `cookies()` es suficiente, no declarar `request`.
+
+**Tiempo perdido:** 2 ciclos de CI/CD (~10 minutos)
+
+---
+
+## Error 12: Precios manipulables desde el cliente
+
+**Qué se intentó primero:**
+El endpoint `/api/order` aceptaba `subtotal`, `total`, `costoDespacho`, `descuento` del body del request — los mismos valores que el formulario del cliente calculaba y enviaba.
+
+**El ataque:**
+```bash
+curl -X POST /api/order \
+  -d '{"nombre":"Hack","direccion":"Test 123","items":[{"tipo":"plumones","cantidad":10,"precioUnitario":-1}],"total":1}'
+# Pedido guardado en Firestore con total: 1 peso
+```
+
+**Por qué pasó:**
+El formulario siempre enviaba precios correctos durante las pruebas. La validación de tipos TypeScript no protege el runtime.
+
+**La solución:**
+```typescript
+// Recalcular SIEMPRE desde el catálogo oficial
+const precioOficial = PRECIOS.find((p) => p.tipo === item.tipo)!.precio;
+const subtotalCalculado = itemsSanitizados.reduce((acc, i) => acc + i.precioUnitario * i.cantidad, 0);
+const totalCalculado = subtotalConDescuento + costoDespachoCalculado;
+// El cliente puede enviar lo que quiera — se ignora
+```
+
+**Aprendizaje:**
+Nunca confiar en valores monetarios del cliente. Precio = dato del servidor. Siempre.
+
+**Tiempo perdido:** 0 (detectado en auditoría, no en producción)
+
+---
+
+## Error 13: ThemeToggle invisible en light mode — 5 commits de fix
+
+**Qué se intentó primero:**
+El dark mode original usaba clases Tailwind hardcoded: `text-white`, `bg-gray-900`, `bg-black`. Al implementar el light mode con CSS variables, el cuerpo de la página cambió a fondo claro pero el texto seguía siendo blanco.
+
+**Por qué requirió 5 commits:**
+El problema tenía dos capas. Primero: `globals.css` tenía `color: #ffffff` en el `body` hardcodeado. Segundo: cada componente tenía sus propias clases `text-white` en títulos, párrafos, labels. No había un solo lugar para cambiar.
+
+```css
+/* ❌ Causa raíz en globals.css */
+body {
+  background-color: #000000;
+  color: #ffffff; /* ← Este sobreescribía todo */
+}
+
+/* ✅ Fix */
+body {
+  background-color: var(--indigo-bg);
+  color: var(--indigo-primary);
+}
+```
+
+**Aprendizaje:**
+Implementar un sistema de temas desde el primer día con CSS variables en el `body`. Nunca usar `text-white` de Tailwind en componentes — siempre `style={{ color: 'var(--token)' }}`.
+
+**Tiempo perdido:** 5 ciclos de deploy para encontrar todas las ocurrencias
+
+---
+
+## Error 14: /api/auth/session devolvía 500 en token inválido
+
+**Qué se intentó primero:**
+El catch genérico del endpoint retornaba `status: 500` para cualquier error, incluyendo tokens Firebase expirados o malformados.
+
+**El problema:**
+Un 500 dice "algo salió mal en el servidor". Un token inválido es culpa del cliente — debería ser 401. Además, el log mostraba el error completo de Firebase en producción, incluyendo detalles del token.
+
+**La solución:**
+```typescript
+} catch (error) {
+  const message = error instanceof Error ? error.message : '';
+  if (message.includes('Firebase ID token has expired') ||
+      message.includes('Decoding Firebase ID token failed') ||
+      message.includes('Invalid Firebase ID token')) {
+    return NextResponse.json({ error: 'Token inválido o expirado' }, { status: 401 });
+  }
+  console.error('[auth/session POST] Error:', error);
+  return NextResponse.json({ error: 'Error al crear sesión' }, { status: 500 });
+}
+```
+
+**Aprendizaje:**
+Mapear excepciones de SDKs externos a códigos HTTP semánticamente correctos. Un 401 vs 500 importa tanto para el cliente como para el monitoreo.
+
+**Tiempo perdido:** Detectado en auditoría, fix inmediato
+
+---
+
+## Chatbot Washi — Estado Actualizado (2026-05-26)
+
+El chatbot está operativo con mejoras de seguridad y eficiencia respecto al estado anterior.
+
+### Cambios desde el último estado documentado
+
+- ✅ **Rate limit activo:** 30 requests/minuto por IP
+- ✅ **Límite de historial:** máximo 20 mensajes por conversación (previene abuso de tokens)
+- ✅ **Escalación por keywords:** detecta "molesto", "reclamo", "dañaron", "perdieron", "pésimo", etc. y responde antes de llamar a Claude (ahorra tokens + respuesta más rápida)
+- ✅ **System prompt con personalidad chilena:** Washi usa "po", "cachai", emojis moderados, respuestas cortas
+
+### Limitaciones que siguen igual
+
+- Stateless: sin memoria entre sesiones
+- Sin acceso a pedidos reales del cliente
+- Sin historial persistente en Firestore
+- Respuestas genéricas (no personalizadas por usuario)
+
+---
+
 ## Por documentar (agregar conforme avanza el proyecto)
 
 - [ ] Costos reales al mes 1 vs estimación ($1.20/mes proyectado)
@@ -364,4 +530,3 @@ manejar casos más complejos sin sobrecarga humana.
 - [ ] Primer uso del chatbot por un cliente real — latencia, precisión de respuestas
 - [ ] Feedback de usuarios reales en landing — A/B testing Dark+Indigo vs alternativa
 - [ ] Performance en mobile — lighthouse score después del redesign
-- [ ] Rate limiting y protección contra spam — necesidad real o prematura optimización?

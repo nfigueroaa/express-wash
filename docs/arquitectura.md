@@ -1,6 +1,6 @@
 # Arquitectura del Sistema — Express Delivery Wash
 
-**Última actualización:** 2026-05-14 | **Estado:** Dark+Indigo redesign (P1.1) ✅ Desplegado
+**Última actualización:** 2026-05-26 | **Estado:** Security Sprint + Roles + Dark/Light Mode (P1.2) ✅ Desplegado
 
 ---
 
@@ -9,21 +9,43 @@
 ```
 Cliente Web
     │
-    ├── GET  /              → Landing (Hero → BentoGrid → FeaturesSection → PricingCards 
-    │                                        → CalculadoraPedido → MapaCobertura → CTASection)
+    ├── GET  /              → Landing (Hero → BentoGrid → FeaturesSection
+    │                         → PricingCards [seleccionables] → CalculadoraPedido
+    │                         → MapaCobertura → CTASection)
+    │                         [Header: ThemeToggle dark/light + link Admin]
     │
-    ├── GET  /pedido        → Formulario de pedido (con calculadora customizable)
+    ├── GET  /pedido        → Formulario de pedido
     │       │
-    │       ├── GET /api/geo?q=... → Nominatim → Haversine → GeoResult
-    │       └── POST /api/order  → Firestore.addDoc("pedidos")
-    │                               └── POST /api/notify → EmailJS API
+    │       ├── GET /api/geo?q=... [rate: 60/h]  → Nominatim → Haversine → GeoResult
+    │       └── POST /api/order  [rate: 5/h]     → recalcula precios server-side
+    │                               └── Firestore.add("pedidos")
+    │                               └── POST /api/notify [rate: 10/h] → EmailJS API
     │
-    ├── GET  /admin         → PedidosTable → Firestore.getDocs("pedidos")
+    ├── POST /api/chat  [rate: 30/min]
+    │       └── detectarEscalacion() → Claude Haiku 4.5 API
     │
-    └── POST /api/chat      → detectarEscalacion() → Claude Haiku 4.5 API
-    
-    [Sidebar Floating]
-    └── ChatbotWidget       → Client-side chat, integración Washi
+    └── GET  /admin/*
+            │
+            ├── CAPA 1: middleware.ts
+            │     Sin cookie → redirect /admin/login
+            │     Con cookie → pass (agrega header x-is-login-page)
+            │
+            ├── CAPA 2: AdminLayout (Server Component)
+            │     verifySessionCookie() → Firebase Admin SDK
+            │     Email no en admins → redirect /admin/login
+            │     OK → render con <RoleGuard requiredRole="operario">
+            │
+            ├── CAPA 3: RoleGuard (Client Component)
+            │     GET /api/admin/validate-role
+            │     Verifica permisos según role (admin/supervisor/operario)
+            │
+            └── /admin (panel)
+                  ├── GET /api/pedidos        → Firestore "pedidos"
+                  ├── PATCH /api/pedidos/:id  → Firestore update
+                  └── GET /api/admin/notifications (SSE) → stream en tiempo real
+
+[ChatbotWidget — floating en toda la app]
+    └── POST /api/chat → Washi (Claude Haiku 4.5)
 ```
 
 ---
@@ -418,10 +440,75 @@ Landing
 
 ---
 
+## Seguridad por Capas
+
+### HTTP Security Headers (next.config.js — todas las rutas)
+
+| Header | Valor | Protección |
+|--------|-------|-----------|
+| `X-Frame-Options` | `SAMEORIGIN` | Clickjacking |
+| `X-Content-Type-Options` | `nosniff` | MIME sniffing |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` | Filtración de URLs |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | Downgrade HTTPS |
+| `Permissions-Policy` | `camera=(), microphone=(), geolocation=(self)` | APIs del navegador |
+| `Content-Security-Policy` | `default-src 'self'` + allowlist explícita | XSS, inyección de recursos |
+| `X-Powered-By` | eliminado (`poweredByHeader: false`) | Info disclosure |
+
+### Validación de Datos
+
+- **Precios recalculados server-side** en `/api/order` — el cliente NO puede manipular `total`, `subtotal`, `costoDespacho`. El servidor recalcula con `PRECIOS` del catálogo oficial.
+- **Tipos de items validados** — solo acepta `cubrecamas`, `plumones`, `colchas`, `sabanas_ropa`.
+- **Parámetros sanitizados** — `.trim()` en todos los strings del pedido.
+
+### Autenticación Admin (triple capa)
+
+```
+Request /admin/*
+    └── 1. middleware.ts — verifica presencia de cookie 'session'
+          └── 2. AdminLayout — verifySessionCookie() con Firebase Admin SDK
+                     checkRevoked: true — detecta sesiones revocadas
+                     verificarAdmin(email) — email debe estar en colección 'admins'
+                └── 3. RoleGuard — /api/admin/validate-role — verifica permiso específico
+```
+
+### Rate Limiting
+
+In-memory por instancia Cloud Run. Suficiente para MVP; en multi-instancia el límite efectivo se multiplica.
+
+| Endpoint | Límite | Ventana |
+|----------|--------|---------|
+| `/api/chat` | 30 | 1 minuto |
+| `/api/order` | 5 | 1 hora |
+| `/api/geo` | 60 | 1 hora |
+| `/api/notify` | 10 | 1 hora |
+
+### Sistema de Roles
+
+```
+Colección Firestore: admins/{email}
+Campos: { activo: boolean, role: 'admin'|'supervisor'|'operario', nombre, creadoEn }
+
+Permisos:
+                          admin  supervisor  operario
+canViewDashboard            ✅      ✅          ✅
+canManageOrders             ✅      ✅          ✅
+canViewReports              ✅      ✅          ❌
+canManageUsers              ✅      ❌          ❌
+canChangeSettings           ✅      ❌          ❌
+```
+
+### Notificaciones SSE (Server-Sent Events)
+
+El admin panel se suscribe a `/api/admin/notifications?userId=email` con SSE. El servidor usa un store in-memory (`notifications.ts`) con callbacks por userId. Cuando se crea un pedido nuevo, `/api/order` llama a `createNotification()` y todos los admins conectados reciben el evento en tiempo real.
+
+**Limitación:** El store SSE es in-memory por instancia. Con múltiples instancias Cloud Run, las notificaciones solo llegan a admins conectados a la misma instancia.
+
+---
+
 ## Deploy y Verificación
 
-**Última ejecución:** 2026-05-14 10:45 UTC
+**Última ejecución:** 2026-05-26
 **URL producción:** https://express-wash-4hgom7r2cq-tl.a.run.app
-**CI/CD:** GitHub Actions → GCP Cloud Run
-**Build time:** ~2 min
-**Bundle size:** 21.4 kB (11 páginas)
+**CI/CD:** GitHub Actions → Docker multistage → GCP Cloud Run southamerica-west1
+**Build time:** ~2.5 min
+**Revisión activa:** express-wash-00056-m26

@@ -448,10 +448,145 @@ export function useChat() {
 
 ---
 
+---
+
+## 🔐 `/api/auth/session` — Autenticación
+
+Crea o elimina la sesión de administrador.
+
+### POST — Login
+
+Verifica un Firebase ID token y crea una session cookie httpOnly válida por 5 días. El email debe estar en la colección `admins` con `activo: true`.
+
+```http
+POST /api/auth/session
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{ "idToken": "<firebase-id-token>" }
+```
+
+**Respuestas:**
+
+| Código | Descripción |
+|--------|-------------|
+| `200` | `{ "success": true }` + `Set-Cookie: session=...; HttpOnly; Secure; SameSite=Strict` |
+| `400` | idToken faltante o email no disponible |
+| `401` | Token inválido o expirado |
+| `403` | Email no está en lista de admins |
+| `500` | Error interno |
+
+### DELETE — Logout
+
+Elimina la session cookie (maxAge=0).
+
+```bash
+curl -X DELETE https://express-wash-4hgom7r2cq-tl.a.run.app/api/auth/session
+```
+
+**Respuesta:** `200 { "success": true }`
+
+---
+
+## 📋 `/api/pedidos` — Gestión de Pedidos
+
+**⚠️ Requiere sesión de admin válida (`Cookie: session=...`)**
+
+### GET — Listar pedidos
+
+Retorna todos los pedidos ordenados por fecha de creación (más recientes primero).
+
+```bash
+curl https://express-wash-4hgom7r2cq-tl.a.run.app/api/pedidos \
+  -H "Cookie: session=<session-cookie>"
+```
+
+**Respuesta (200):** Array de objetos `Pedido[]`
+
+**Errores:** `401` sin sesión / sesión inválida
+
+### PATCH — Actualizar pedido
+
+Actualiza `estado` y/o `notas` de un pedido. Requiere al menos uno de los dos campos.
+
+```bash
+curl -X PATCH https://express-wash-4hgom7r2cq-tl.a.run.app/api/pedidos/<id> \
+  -H "Cookie: session=<session-cookie>" \
+  -H "Content-Type: application/json" \
+  -d '{"estado": "en_proceso"}'
+```
+
+**Estados válidos:** `pendiente` · `en_proceso` · `listo` · `entregado` · `cancelado`
+
+**Errores:** `400` estado inválido · `401` sin sesión
+
+---
+
+## 🔔 `/api/admin/notifications` — SSE Notificaciones
+
+**⚠️ Requiere sesión admin + userId debe coincidir con el email de la sesión**
+
+Stream de Server-Sent Events para recibir notificaciones en tiempo real en el admin panel.
+
+```http
+GET /api/admin/notifications?userId=admin@ejemplo.com
+Cookie: session=<session-cookie>
+```
+
+**Respuesta:** Stream SSE con eventos tipo `notification`:
+```
+event: notification
+data: {"id":"notif_123","type":"new_order","title":"Nuevo pedido","message":"...","timestamp":"...","read":false}
+```
+
+**Errores:** `401` sin sesión o userId faltante · `403` userId no coincide con sesión
+
+---
+
+## 👤 `/api/admin/validate-role` — Validar Rol
+
+**⚠️ Requiere sesión admin**
+
+Retorna el rol del usuario autenticado para que el cliente pueda aplicar RoleGuard.
+
+```bash
+curl https://express-wash-4hgom7r2cq-tl.a.run.app/api/admin/validate-role \
+  -H "Cookie: session=<session-cookie>"
+```
+
+**Respuesta (200):**
+```json
+{ "role": "admin" }
+```
+
+**Roles posibles:** `admin` · `supervisor` · `operario`
+
+**Errores:** `401` sin sesión o sesión inválida
+
+---
+
+## 🚦 Rate Limits por Endpoint
+
+| Endpoint | Límite | Ventana | Tipo |
+|----------|--------|---------|------|
+| `POST /api/chat` | 30 requests | 1 minuto | por IP |
+| `POST /api/order` | 5 requests | 1 hora | por IP |
+| `GET /api/geo` | 60 requests | 1 hora | por IP |
+| `POST /api/notify` | 10 requests | 1 hora | por IP |
+| Resto de endpoints | Sin límite | — | autenticados |
+
+Cuando se excede el límite: `429 Too Many Requests`
+
+> **Nota:** El rate limiter es in-memory por instancia Cloud Run. En despliegues con múltiples instancias, el límite efectivo puede ser más alto.
+
+---
+
 ## 📖 Más Información
 
 - [Arquitectura](arquitectura.md)
 - [Setup Local](setup-local.md)
 - [Troubleshooting](troubleshooting.md)
 
-**Última actualización:** 2026-05-12
+**Última actualización:** 2026-05-26

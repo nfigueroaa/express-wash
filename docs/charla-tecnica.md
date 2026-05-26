@@ -324,7 +324,35 @@ Meta mes 6:                  100+ pedidos/semana (si hay traction)
 
 ---
 
+## El Sprint de Seguridad — El Momento que Más Aprendí
+
+Esta sección merece su propio espacio en la charla porque fue la más reveladora.
+
+Hice una auditoría de seguridad completa 2 semanas después del MVP. Lo que encontré en 30 minutos de pruebas:
+
+**Vulnerabilidades reales en producción:**
+1. `GET /api/pedidos` era completamente pública — nombres, teléfonos y direcciones de todos los clientes accesibles sin login
+2. `/api/order` confiaba en los precios enviados por el cliente — `total: 1` se guardaba en Firestore sin validación
+3. Sin Content-Security-Policy — cualquier script externo podía cargarse
+4. `/api/auth/session` devolvía HTTP 500 en lugar de 401 para tokens inválidos
+
+El momento más impactante: probé `curl https://mi-sitio.com/api/pedidos` sin cookies y recibí JSON con datos reales de clientes. Datos personales, sin autenticación.
+
+**Lo que aprendí:**
+- "Lo protejo después" es el error más caro. Tarda 10 minutos implementarlo desde el inicio, tarda días reparar la confianza si se filtra.
+- TypeScript no es seguridad. Validar tipos en compilación no valida datos en runtime.
+- Una auditoría sistemática (probar cada endpoint sin auth, con datos malformados, con payloads grandes) es obligatoria antes de lanzar.
+
+**El momento WOW para la charla:**
+Mostrar en vivo el curl al endpoint público del MVP original, luego mostrar el 401 del sitio actual después del fix. Mismo endpoint, misma URL, respuesta completamente diferente.
+
+---
+
 ## Qué Haría Diferente Hoy
+
+### 0️⃣ Seguridad como primera clase (nuevo)
+Cada endpoint nuevo = auth primero, validación de datos primero. No al final.
+Nunca confiar en valores del cliente para cálculos de precio o estado.
 
 ### 1️⃣ Tests desde el día 1
 Agregué tests DESPUÉS de funcionalidad. Mejor: test-driven development desde cero.
@@ -366,31 +394,38 @@ logger.info('order_created', {
 
 ## Demo Points (Si Das Esta Charla)
 
-1. **Landing Page en vivo**
-   - Mostrar Dark+Indigo design en móvil + desktop
-   - BentoGrid (2 cards), FeaturesSection, PricingCards
-   - Animaciones suaves sin JavaScript pesado
+1. **Landing Page + Dark/Light toggle**
+   - Mostrar Dark+Indigo design → clickear ThemeToggle → cambio instantáneo
+   - PricingCards: click para seleccionar plan (interactivas, no estáticas)
+   - BentoGrid, FeaturesSection, CTASection
 
 2. **Geocoding en vivo**
    - Escribir dirección: "Miraflores 123, Santiago"
-   - Mapa gira, centra, dibuja círculo de cobertura (15 km)
-   - Nominatim busca, OpenStreetMap renderiza
+   - Mapa centra, dibuja círculo de cobertura (15 km)
+   - Costo de despacho calculado al instante
 
 3. **Crear pedido**
-   - Rellenar formulario
-   - Ver en tiempo real en Firestore admin panel
+   - Rellenar formulario → submit
+   - Mostrar en Firestore que el precio es el oficial (no el que envió el cliente)
 
-4. **Chatbot inteligente**
-   - "¿Qué servicios ofrecen?"
-   - Claude Haiku responde en español natural (~500ms)
+4. **Chatbot Washi**
+   - "¿Qué servicios ofrecen?" → respuesta natural en español chileno
+   - Intentar "estoy muy molesto" → escalación automática sin llamar a Claude
 
-5. **Admin panel**
-   - Tabla pedidos con estatus
-   - Cambiar estado en vivo → UI se actualiza (real-time listeners)
+5. **Admin panel con roles**
+   - Login con Google → sistema verifica email en colección admins
+   - Mostrar RoleGuard en acción (diferente UI por rol)
+   - Notificaciones SSE: crear pedido en otra tab → aparece en tiempo real
 
-6. **Production URL**
-   - Abrir https://express-wash-4hgom7r2cq-tl.a.run.app
-   - Mostrar Lighthouse score, Core Web Vitals
+6. **🎯 Momento WOW — El Sprint de Seguridad**
+   - Abrir Chrome DevTools → Network
+   - Mostrar que `/api/pedidos` devuelve 401 sin cookies
+   - Mostrar todos los security headers en la Response: CSP, HSTS, X-Frame-Options
+   - "Este curl habría funcionado hace 2 semanas"
+
+7. **Production URL**
+   - https://express-wash-4hgom7r2cq-tl.a.run.app
+   - Costo: ~$1.20/mes total
 
 ---
 
