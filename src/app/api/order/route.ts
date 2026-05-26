@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { crearPedido } from '@/lib/firestore-admin';
 import { checkRateLimit, getClientIP } from '@/lib/rate-limit';
-import type { Pedido } from '@/lib/types';
+import { calcularDespacho, calcularDescuento } from '@/lib/utils';
+import { PRECIOS } from '@/lib/types';
+import type { Pedido, ItemPedido } from '@/lib/types';
 
 export async function POST(request: NextRequest) {
   // Rate limit: 5 pedidos por IP por hora
@@ -27,6 +29,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Debe incluir al menos un item' }, { status: 400 });
     }
 
+    // Validar tipos de items y recalcular precios SERVER-SIDE
+    // No se confía en los precios enviados por el cliente
+    const tiposValidos = PRECIOS.map((p) => p.tipo);
+    const itemsSanitizados: ItemPedido[] = [];
+    for (const item of body.items) {
+      if (!tiposValidos.includes(item.tipo)) {
+        return NextResponse.json({ error: `Tipo de item inválido: ${item.tipo}` }, { status: 400 });
+      }
+      const cantidad = Math.max(1, Math.floor(Number(item.cantidad) || 1));
+      const precioOficial = PRECIOS.find((p) => p.tipo === item.tipo)!.precio;
+      itemsSanitizados.push({ tipo: item.tipo, cantidad, precioUnitario: precioOficial });
+    }
+
+    // Recalcular totales con valores oficiales (no del cliente)
+    const distanciaKm = typeof body.distanciaKm === 'number' ? body.distanciaKm : 0;
+    const subtotalCalculado = itemsSanitizados.reduce(
+      (acc, i) => acc + i.precioUnitario * i.cantidad, 0,
+    );
+    const descuentoCalculado = calcularDescuento(subtotalCalculado, distanciaKm);
+    const subtotalConDescuento = subtotalCalculado - descuentoCalculado;
+    const costoDespachoCalculado = calcularDespacho(distanciaKm, subtotalConDescuento);
+    const totalCalculado = subtotalConDescuento + costoDespachoCalculado;
+
     const ahora = new Date().toISOString();
 
     const pedido: Omit<Pedido, 'id'> = {
@@ -35,12 +60,12 @@ export async function POST(request: NextRequest) {
       direccion: body.direccion.trim(),
       lat: body.lat,
       lon: body.lon,
-      distanciaKm: body.distanciaKm,
-      items: body.items,
-      subtotal: body.subtotal || 0,
-      costoDespacho: body.costoDespacho || 0,
-      descuento: body.descuento || 0,
-      total: body.total || 0,
+      distanciaKm,
+      items: itemsSanitizados,
+      subtotal: subtotalCalculado,
+      costoDespacho: costoDespachoCalculado,
+      descuento: descuentoCalculado,
+      total: totalCalculado,
       notas: body.notas?.trim() || '',
       estado: 'pendiente',
       canal: body.canal || 'web',

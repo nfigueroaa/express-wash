@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { formatCLP } from '@/lib/utils';
+import { checkRateLimit, getClientIP } from '@/lib/rate-limit';
 import type { ItemPedido } from '@/lib/types';
 
 export async function POST(request: NextRequest) {
+  // Rate limit: 10 notificaciones por IP por hora (solo llamado internamente desde /api/order)
+  const ip = getClientIP(request);
+  if (!checkRateLimit(`notify:${ip}`, 10, 60 * 60_000)) {
+    return NextResponse.json({ ok: false, error: 'Rate limit excedido' }, { status: 429 });
+  }
+
   try {
     const { pedidoId, pedido } = await request.json();
 

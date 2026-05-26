@@ -59,6 +59,15 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (error) {
+    // Firebase lanza errores específicos para tokens inválidos/expirados
+    const message = error instanceof Error ? error.message : '';
+    if (
+      message.includes('Firebase ID token has expired') ||
+      message.includes('Decoding Firebase ID token failed') ||
+      message.includes('Invalid Firebase ID token')
+    ) {
+      return NextResponse.json({ error: 'Token inválido o expirado' }, { status: 401 });
+    }
     console.error('[auth/session POST] Error:', error);
     return NextResponse.json({ error: 'Error al crear sesión' }, { status: 500 });
   }

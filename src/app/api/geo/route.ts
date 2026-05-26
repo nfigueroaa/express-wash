@@ -6,8 +6,18 @@ import {
   BASE_LON,
   COBERTURA_KM,
 } from '@/lib/utils';
+import { checkRateLimit, getClientIP } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
+  // Rate limit: 60 geocodificaciones por IP por hora (Nominatim fair use)
+  const ip = getClientIP(request);
+  if (!checkRateLimit(`geo:${ip}`, 60, 60 * 60_000)) {
+    return NextResponse.json(
+      { error: 'Demasiadas búsquedas. Intenta nuevamente en una hora.' },
+      { status: 429 },
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const q = searchParams.get('q');
 
