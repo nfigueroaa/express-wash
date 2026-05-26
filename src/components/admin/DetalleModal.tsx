@@ -138,7 +138,7 @@ export function DetalleModal({ pedido, onClose }: DetalleModalProps) {
             </div>
             <span
               className="text-xs font-medium px-2 py-1 rounded-full"
-              style={{ backgroundColor: '#2e319233', color: '#c0c1ff' }}
+              style={{ backgroundColor: '#2e319233', color: 'var(--indigo-primary)' }}
             >
               {pedido.estado.replace('_', ' ')}
             </span>

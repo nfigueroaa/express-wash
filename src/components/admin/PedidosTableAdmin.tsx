@@ -306,7 +306,7 @@ export function PedidosTableAdmin({ pedidos, onRefresh }: PedidosTableAdminProps
                           className="text-xs px-2 py-1 rounded border transition-colors hover:border-gray-500"
                           style={{
                             backgroundColor: notaAbierta === p.id ? '#2e319233' : '#0d0d1f',
-                            color: notaAbierta === p.id ? '#c0c1ff' : '#888',
+                            color: notaAbierta === p.id ? 'var(--indigo-primary)' : '#888',
                             borderColor: notaAbierta === p.id ? '#2e3192' : '#1a1a2e',
                           }}
                         >
