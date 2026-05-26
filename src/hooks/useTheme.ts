@@ -40,6 +40,7 @@ function applyTheme(theme: Theme) {
     root.style.setProperty('--indigo-btn', '#2e3192');
     root.style.setProperty('--indigo-text-muted', '#888899');
     root.style.setProperty('--indigo-text-faint', '#444455');
+    root.style.setProperty('--indigo-text-main', '#c0c1ff');
     root.style.setProperty('--indigo-border', '#1a1a2e');
     root.style.setProperty('--indigo-border-2', '#0f0f1f');
     root.style.setProperty('--indigo-tertiary', '#6b7adb');
@@ -50,8 +51,9 @@ function applyTheme(theme: Theme) {
     root.style.setProperty('--indigo-primary', '#2e3192');
     root.style.setProperty('--indigo-primary-dim', '#5a5db5');
     root.style.setProperty('--indigo-btn', '#6b7adb');
-    root.style.setProperty('--indigo-text-muted', '#666666');
-    root.style.setProperty('--indigo-text-faint', '#999999');
+    root.style.setProperty('--indigo-text-muted', '#444444');
+    root.style.setProperty('--indigo-text-faint', '#666666');
+    root.style.setProperty('--indigo-text-main', '#1a1a2e');
     root.style.setProperty('--indigo-border', '#e0e0e8');
     root.style.setProperty('--indigo-border-2', '#f0f0f5');
     root.style.setProperty('--indigo-tertiary', '#2e3192');
