@@ -31,7 +31,7 @@ export function Header() {
             className="text-sm font-semibold px-4 py-2 rounded-lg transition-colors hover:opacity-80"
             style={{
               backgroundColor: 'var(--indigo-btn)',
-              color: '#fff',
+              color: 'var(--indigo-surface)',
             }}
           >
             Panel Admin

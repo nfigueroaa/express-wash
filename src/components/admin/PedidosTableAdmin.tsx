@@ -210,7 +210,7 @@ export function PedidosTableAdmin({ pedidos, onRefresh }: PedidosTableAdminProps
                   >
                     {/* Cliente */}
                     <td className="px-4 py-3">
-                      <div className="font-medium" style={{ color: '#fff' }}>
+                      <div className="font-medium" style={{ color: 'var(--indigo-primary)' }}>
                         {p.nombre}
                       </div>
                       {p.telefono && (

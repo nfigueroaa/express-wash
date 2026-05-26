@@ -38,7 +38,7 @@ export default function RootLayout({
     <html lang="es">
       <body
         className={`${inter.variable} ${montserrat.variable} font-inter antialiased`}
-        style={{ backgroundColor: 'var(--indigo-bg)', color: '#ffffff' }}
+        style={{ backgroundColor: 'var(--indigo-bg)', color: 'var(--indigo-primary)' }}
       >
         <Header />
         {children}

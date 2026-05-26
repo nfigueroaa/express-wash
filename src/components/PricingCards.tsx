@@ -153,7 +153,7 @@ export function PricingCards() {
                     plan.featured
                       ? {
                           backgroundColor: '#E91E63',
-                          color: '#ffffff',
+                          color: 'var(--indigo-surface)',
                           border: 'none',
                         }
                       : {
