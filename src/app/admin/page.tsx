@@ -6,7 +6,7 @@ export default function AdminPage() {
       <div className="mb-6">
         <h1
           className="text-2xl font-bold mb-1"
-          style={{ color: '#c0c1ff', fontFamily: 'Montserrat, sans-serif' }}
+          style={{ color: 'var(--indigo-primary)', fontFamily: 'Montserrat, sans-serif' }}
         >
           Pedidos
         </h1>

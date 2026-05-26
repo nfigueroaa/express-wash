@@ -35,7 +35,7 @@ export function DetalleModal({ pedido, onClose }: DetalleModalProps) {
           <div>
             <h2
               className="text-lg font-bold"
-              style={{ color: '#c0c1ff', fontFamily: 'Montserrat, sans-serif' }}
+              style={{ color: 'var(--indigo-primary)', fontFamily: 'Montserrat, sans-serif' }}
             >
               {pedido.nombre}
             </h2>
@@ -97,7 +97,7 @@ export function DetalleModal({ pedido, onClose }: DetalleModalProps) {
                   <span style={{ color: '#888' }}>
                     {item.cantidad}× {item.tipo}
                   </span>
-                  <span style={{ color: '#c0c1ff' }}>
+                  <span style={{ color: 'var(--indigo-primary)' }}>
                     {formatCLP(item.precioUnitario * item.cantidad)}
                   </span>
                 </div>
@@ -123,7 +123,7 @@ export function DetalleModal({ pedido, onClose }: DetalleModalProps) {
             </div>
             <div
               className="flex justify-between font-bold pt-1"
-              style={{ color: '#c0c1ff', borderTop: '1px solid #2e3192' }}
+              style={{ color: 'var(--indigo-primary)', borderTop: '1px solid #2e3192' }}
             >
               <span>Total</span>
               <span>{formatCLP(pedido.total)}</span>

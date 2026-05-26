@@ -39,7 +39,7 @@ export function Sidebar({ usuario }: SidebarProps) {
       <div className="p-4 mb-2">
         <div
           className="font-bold text-sm"
-          style={{ color: '#c0c1ff', fontFamily: 'Montserrat, sans-serif' }}
+          style={{ color: 'var(--indigo-primary)', fontFamily: 'Montserrat, sans-serif' }}
         >
           ⚡ Express Wash
         </div>
@@ -79,7 +79,7 @@ export function Sidebar({ usuario }: SidebarProps) {
               className="flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors"
               style={
                 isCurrentPage
-                  ? { backgroundColor: '#2e3192', color: '#c0c1ff' }
+                  ? { backgroundColor: '#2e3192', color: 'var(--indigo-primary)' }
                   : { color: '#666' }
               }
             >
@@ -102,7 +102,7 @@ export function Sidebar({ usuario }: SidebarProps) {
           ) : (
             <div
               className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-              style={{ backgroundColor: '#2e3192', color: '#c0c1ff' }}
+              style={{ backgroundColor: '#2e3192', color: 'var(--indigo-primary)' }}
             >
               {(usuario.nombre || usuario.email)[0].toUpperCase()}
             </div>
@@ -110,7 +110,7 @@ export function Sidebar({ usuario }: SidebarProps) {
           <div className="overflow-hidden">
             <div
               className="text-xs font-medium truncate"
-              style={{ color: '#c0c1ff' }}
+              style={{ color: 'var(--indigo-primary)' }}
               title={usuario.nombre}
             >
               {usuario.nombre}

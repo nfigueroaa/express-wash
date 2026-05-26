@@ -27,7 +27,7 @@ export function StatsCards({ pedidos }: StatsCardsProps) {
     { label: 'Pendientes', valor: pendientes, color: '#f59e0b', tipo: 'numero' },
     { label: 'En proceso', valor: enProceso, color: '#3b82f6', tipo: 'numero' },
     { label: 'Entregados', valor: entregados, color: '#22c55e', tipo: 'numero' },
-    { label: 'Ingresos mes', valor: ingresosMes, color: '#c0c1ff', tipo: 'moneda' },
+    { label: 'Ingresos mes', valor: ingresosMes, color: '#6d28d9', tipo: 'moneda' },
   ];
 
   return (

@@ -119,7 +119,7 @@ export function PedidosTableAdmin({ pedidos, onRefresh }: PedidosTableAdminProps
       {toast && (
         <div
           className="fixed top-4 right-4 z-50 px-4 py-2 rounded-lg text-sm font-medium shadow-xl"
-          style={{ backgroundColor: '#2e3192', color: '#c0c1ff' }}
+          style={{ backgroundColor: '#2e3192', color: 'var(--indigo-primary)' }}
         >
           {toast}
         </div>
@@ -142,7 +142,7 @@ export function PedidosTableAdmin({ pedidos, onRefresh }: PedidosTableAdminProps
             className="px-3 py-1 rounded-full text-xs font-medium border transition-colors"
             style={
               filtroEstado === 'todos'
-                ? { backgroundColor: '#2e3192', color: '#c0c1ff', borderColor: '#2e3192' }
+                ? { backgroundColor: '#2e3192', color: 'var(--indigo-primary)', borderColor: '#2e3192' }
                 : { backgroundColor: 'transparent', color: '#555', borderColor: '#1a1a2e' }
             }
           >
@@ -246,7 +246,7 @@ export function PedidosTableAdmin({ pedidos, onRefresh }: PedidosTableAdminProps
                     </td>
 
                     {/* Total */}
-                    <td className="px-4 py-3 font-bold" style={{ color: '#c0c1ff' }}>
+                    <td className="px-4 py-3 font-bold" style={{ color: 'var(--indigo-primary)' }}>
                       {formatCLP(p.total)}
                     </td>
 
@@ -337,7 +337,7 @@ export function PedidosTableAdmin({ pedidos, onRefresh }: PedidosTableAdminProps
                             className="flex-1 text-xs rounded-lg px-3 py-2 resize-none focus:outline-none"
                             style={{
                               backgroundColor: '#111128',
-                              color: '#c0c1ff',
+                              color: 'var(--indigo-primary)',
                               border: '1px solid #2e3192',
                             }}
                           />
@@ -346,7 +346,7 @@ export function PedidosTableAdmin({ pedidos, onRefresh }: PedidosTableAdminProps
                               onClick={() => guardarNota(p.id!)}
                               disabled={guardandoNota}
                               className="text-xs px-3 py-1.5 rounded font-medium disabled:opacity-50 transition-opacity"
-                              style={{ backgroundColor: '#2e3192', color: '#c0c1ff' }}
+                              style={{ backgroundColor: '#2e3192', color: 'var(--indigo-primary)' }}
                             >
                               {guardandoNota ? 'Guardando...' : 'Guardar'}
                             </button>

@@ -62,7 +62,7 @@ export default function LoginPage() {
       >
         <div
           className="text-2xl font-bold mb-1"
-          style={{ color: '#c0c1ff', fontFamily: 'Montserrat, sans-serif' }}
+          style={{ color: 'var(--indigo-primary)', fontFamily: 'Montserrat, sans-serif' }}
         >
           ⚡ Express Wash
         </div>
