@@ -7,7 +7,7 @@ import { verifySessionCookie } from '@/lib/auth';
  * GET /api/pedidos
  * Retorna todos los pedidos — requiere sesión de admin válida.
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Verificar sesión de admin
     const cookieStore = cookies();
