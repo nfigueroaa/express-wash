@@ -461,5 +461,42 @@ Antes de desplegar cambios:
 
 ---
 
-**Última actualización:** 2026-05-13 por Claude  
-**Siguiente revisión:** Después de completar P0.1
+**Última actualización:** 2026-05-26 por Claude  
+**Estado actual:** P0/P1 de estabilidad sin tests, P2/P3 de seguridad ✅ completados — Falta P0 (tests/logging), P1 (FAQ), P3 (monetización)
+
+---
+
+## 📋 Estimaciones Finales — 2026-05-26
+
+### ✅ Completado (adelantado al timeline)
+- P1.1 Dark+Indigo redesign ✅
+- P1.2 Rate limiting + escalación keywords ✅
+- P2.2 Rate limiting global ✅
+- P2.3 Headers de seguridad + CSP ✅
+- P2.1 Validación server-side de precios ✅
+- Auth admin (roles, SSE, RoleGuard) ✅
+- Dark/Light mode toggle ✅
+
+### ⏳ Pendiente con Estimaciones
+
+| Fase | Tarea | Estimado | Prioridad |
+|------|-------|----------|-----------|
+| **P0** | P0.1: Tests unitarios `/api/order` + logging `audit_logs` | **2h** | 🔴 CRÍTICA |
+| **P0** | P0.2: Retry EmailJS + `notificacion_status` en Firestore | **2h** | 🔴 CRÍTICA |
+| **P0** | P0.3: Cloud Logging dashboards + alertas automáticas | **2h** | 🔴 CRÍTICA |
+| **P1** | P1.2 (resto): Actualizar FAQ con preguntas reales de chats | **2h** | 🟠 ALTA |
+| **P1** | P1.3: FAQ accordion en landing + T&C + cancelación | **2h** | 🟠 ALTA |
+| **P2** | P2.1 (resto): Firestore Security Rules restrictivas + encriptación AES-256 | **2h** | 🟡 MEDIA |
+| **P3** | P3.1: Carrito persistente con localStorage + CartContext | **2h** | 🟢 BAJA |
+| **P3** | P3.2: Integración Stripe para pagos online | **2h** | 🟢 BAJA |
+| **P3** | P3.3: Sistema de cupones y descuentos dinámicos | **2h** | 🟢 BAJA |
+| **P3** | P3.4: Analytics dashboard con Chart.js + exportación CSV | **2h** | 🟢 BAJA |
+
+**Total pendiente: 20 horas**
+
+### 🎯 Próxima sesión: P0.1 + P0.2 (4 horas)
+Empezar con tests unitarios y retry logic en emails — son bloqueantes para mantener calidad en producción.
+
+---
+
+**Siguiente revisión:** 2026-05-27 (después de completar P0.1 y P0.2)
