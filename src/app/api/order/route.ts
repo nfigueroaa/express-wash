@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { crearPedido } from '@/lib/firestore-admin';
+import { checkRateLimit, getClientIP } from '@/lib/rate-limit';
 import type { Pedido } from '@/lib/types';
 
 export async function POST(request: NextRequest) {
+  // Rate limit: 5 pedidos por IP por hora
+  const ip = getClientIP(request);
+  if (!checkRateLimit(ip, 5, 60 * 60_000)) {
+    return NextResponse.json(
+      { error: 'Demasiados pedidos. Intenta nuevamente en una hora.' },
+      { status: 429 },
+    );
+  }
+
   try {
     const body = await request.json();
 

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { actualizarPedidoParcial } from '@/lib/firestore-admin';
+import { verifySessionCookie } from '@/lib/auth';
 import type { EstadoPedido } from '@/lib/types';
 
 interface RouteParams {
@@ -16,6 +18,17 @@ interface RouteParams {
  */
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
+    // Verificar sesión de admin
+    const cookieStore = cookies();
+    const session = cookieStore.get('session')?.value;
+    if (!session) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+    const usuario = await verifySessionCookie(session);
+    if (!usuario) {
+      return NextResponse.json({ error: 'Sesión inválida o expirada' }, { status: 401 });
+    }
+
     const { id } = params;
     const body = await request.json();
     const { estado, notas } = body as { estado?: EstadoPedido; notas?: string };

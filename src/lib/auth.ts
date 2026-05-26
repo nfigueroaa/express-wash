@@ -48,10 +48,13 @@ export async function getUserRole(
     }
 
     const decodedToken = await admin.auth().verifySessionCookie(session);
+    if (!decodedToken.email) return null;
+
+    // La colección 'admins' usa el email como ID de documento (consistente con verificarAdmin)
     const userDoc = await admin
       .firestore()
       .collection('admins')
-      .doc(decodedToken.uid)
+      .doc(decodedToken.email)
       .get();
 
     const userData = userDoc.data();

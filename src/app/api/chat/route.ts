@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { checkRateLimit, getClientIP } from '@/lib/rate-limit';
 import {
   CHATBOT_MODEL,
   CHATBOT_MAX_TOKENS,
@@ -8,8 +9,25 @@ import {
 import type { ChatMessage } from '@/lib/types';
 
 export async function POST(request: NextRequest) {
+  // Rate limit: 30 mensajes por IP por minuto
+  const ip = getClientIP(request);
+  if (!checkRateLimit(ip, 30, 60_000)) {
+    return NextResponse.json(
+      { content: 'Demasiadas solicitudes. Espera un momento antes de continuar.', error: true },
+      { status: 429 },
+    );
+  }
+
   try {
     const { messages }: { messages: ChatMessage[] } = await request.json();
+
+    // Limitar historial de mensajes para evitar abuso de tokens
+    if (messages.length > 20) {
+      return NextResponse.json(
+        { content: 'Conversación demasiado larga. Por favor recarga la página.', error: true },
+        { status: 400 },
+      );
+    }
 
     if (!Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json({ error: 'messages requerido' }, { status: 400 });

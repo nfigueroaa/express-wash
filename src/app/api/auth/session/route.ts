@@ -75,6 +75,7 @@ export async function DELETE() {
     secure: process.env.NODE_ENV === 'production',
     maxAge: 0,
     path: '/',
+    sameSite: 'strict',
   });
   return response;
 }
