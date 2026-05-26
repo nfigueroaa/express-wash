@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { obtenerPedidos } from '@/lib/firestore-admin';
 import { verifySessionCookie } from '@/lib/auth';
@@ -7,7 +7,7 @@ import { verifySessionCookie } from '@/lib/auth';
  * GET /api/pedidos
  * Retorna todos los pedidos — requiere sesión de admin válida.
  */
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     // Verificar sesión de admin
     const cookieStore = cookies();
