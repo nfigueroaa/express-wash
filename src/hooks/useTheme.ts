@@ -6,10 +6,9 @@ type Theme = 'dark' | 'light';
 
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>('dark');
-  const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState(true); // Start as mounted to render immediately
 
   useEffect(() => {
-    setMounted(true);
     // Get theme from localStorage or default to dark
     const savedTheme = (localStorage.getItem('theme') as Theme) || 'dark';
     setTheme(savedTheme);
