@@ -40,7 +40,8 @@ key.json
 .env.local
 .superpowers/
 
-# Claude Code worktrees (subagents)
+# Claude Code — ignorar todo excepto lo necesario
+.claude/settings.local.json
 .claude/worktrees/
 
 # Misc uploads/temp
