@@ -7,6 +7,7 @@ import {
   COBERTURA_KM,
 } from '@/lib/utils';
 import { checkRateLimit, getClientIP } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   // Rate limit: 60 geocodificaciones por IP por hora (Nominatim fair use)
@@ -65,7 +66,11 @@ export async function GET(request: NextRequest) {
       costoDespacho: calcularDespacho(distanciaKm, 0),
     });
   } catch (error) {
-    console.error('[geo] Error geocodificando:', error);
+    logger.error('Error geocodificando', {
+      route: '/api/geo',
+      ip,
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: 'Error al geocodificar la dirección. Intenta de nuevo.' },
       { status: 500 },

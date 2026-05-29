@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { formatCLP } from '@/lib/utils';
 import { checkRateLimit, getClientIP } from '@/lib/rate-limit';
 import { actualizarNotificacionStatus } from '@/lib/firestore-admin';
+import { logger } from '@/lib/logger';
 import type { ItemPedido } from '@/lib/types';
 
 const MAX_INTENTOS = 3;
@@ -23,15 +24,15 @@ async function enviarEmailConRetry(payload: object): Promise<{ ok: boolean; inte
       });
 
       if (res.ok) {
-        console.log(`[notify] Email enviado en intento ${intento}`);
+        logger.info(`Email enviado en intento ${intento}`, { route: '/api/notify' });
         return { ok: true, intentos: intento };
       }
 
       ultimoError = `EmailJS ${res.status}: ${await res.text()}`;
-      console.warn(`[notify] Intento ${intento}/${MAX_INTENTOS} fallido — ${ultimoError}`);
+      logger.warn(`Notify intento ${intento}/${MAX_INTENTOS} fallido`, { route: '/api/notify', error: ultimoError });
     } catch (err) {
       ultimoError = err instanceof Error ? err.message : String(err);
-      console.warn(`[notify] Intento ${intento}/${MAX_INTENTOS} error — ${ultimoError}`);
+      logger.warn(`Notify intento ${intento}/${MAX_INTENTOS} error`, { route: '/api/notify', error: ultimoError });
     }
 
     // Backoff exponencial antes del próximo intento (no esperar después del último)
@@ -109,7 +110,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!resultado.ok) {
-      console.error(`[notify] Todos los intentos fallaron — ${resultado.error}`);
+      logger.error('Notify: todos los intentos fallaron', { route: '/api/notify', pedidoId, error: resultado.error });
       return NextResponse.json(
         { ok: false, error: resultado.error, intentos: resultado.intentos },
         { status: 500 },
@@ -118,7 +119,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ ok: true, intentos: resultado.intentos });
   } catch (error) {
-    console.error('[notify] Error enviando notificación:', error);
+    logger.error('Error en /api/notify', { route: '/api/notify', error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ ok: false, error: 'Error interno' }, { status: 500 });
   }
 }

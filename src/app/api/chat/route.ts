@@ -6,12 +6,15 @@ import {
   SYSTEM_PROMPT,
   detectarEscalacion,
 } from '@/lib/chatbot-config';
+import { logger } from '@/lib/logger';
 import type { ChatMessage } from '@/lib/types';
 
 export async function POST(request: NextRequest) {
+  const start = Date.now();
   // Rate limit: 30 mensajes por IP por minuto
   const ip = getClientIP(request);
   if (!checkRateLimit(ip, 30, 60_000)) {
+    logger.warn('Rate limit excedido en /api/chat', { route: '/api/chat', ip });
     return NextResponse.json(
       { content: 'Demasiadas solicitudes. Espera un momento antes de continuar.', error: true },
       { status: 429 },
@@ -21,7 +24,6 @@ export async function POST(request: NextRequest) {
   try {
     const { messages }: { messages: ChatMessage[] } = await request.json();
 
-    // Limitar historial de mensajes para evitar abuso de tokens
     if (messages.length > 20) {
       return NextResponse.json(
         { content: 'Conversación demasiado larga. Por favor recarga la página.', error: true },
@@ -37,6 +39,7 @@ export async function POST(request: NextRequest) {
 
     // Detección de escalación local — ahorra tokens cuando aplica
     if (detectarEscalacion(ultimoMensaje)) {
+      logger.info('Chat escalado a humano', { route: '/api/chat', ip });
       return NextResponse.json({
         content:
           'Entiendo tu consulta. En un momento te contacta nuestro equipo directamente 🙏 También puedes escribirnos por email si lo prefieres.',
@@ -46,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
-      console.error('[chat] ANTHROPIC_API_KEY no configurado');
+      logger.error('ANTHROPIC_API_KEY no configurado', { route: '/api/chat' });
       return NextResponse.json(
         {
           content: 'El chatbot no está disponible en este momento. Contáctanos por email 😊',
@@ -73,7 +76,7 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error(`[chat] Claude API error ${response.status}:`, errText);
+      logger.error(`Claude API error ${response.status}`, { route: '/api/chat', ip, error: errText });
       throw new Error(`Claude API: ${response.status}`);
     }
 
@@ -82,9 +85,21 @@ export async function POST(request: NextRequest) {
       data.content?.[0]?.text ||
       'Lo siento, no pude procesar tu mensaje. Intenta de nuevo 🙏';
 
+    logger.info('Chat respondido', {
+      route: '/api/chat',
+      ip,
+      turns: messages.length,
+      durationMs: Date.now() - start,
+    });
+
     return NextResponse.json({ content, escalado: false });
   } catch (error) {
-    console.error('[chat] Error:', error);
+    logger.error('Error en /api/chat', {
+      route: '/api/chat',
+      ip,
+      error: error instanceof Error ? error.message : String(error),
+      durationMs: Date.now() - start,
+    });
     return NextResponse.json(
       {
         content:

@@ -1,3 +1,7 @@
+'use client';
+
+import { TermsModal } from './TermsModal';
+
 const WHATSAPP_URL =
   'https://wa.me/56942749703?text=' +
   encodeURIComponent('Hola! Quiero consultar sobre sus servicios de lavandería.');
@@ -71,6 +75,9 @@ export function Footer() {
             Nelson Figueroa Albarrán
           </span>{' '}
           · {new Date().getFullYear()}
+        </p>
+        <p>
+          <TermsModal />
         </p>
       </div>
     </footer>

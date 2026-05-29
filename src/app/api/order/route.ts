@@ -3,12 +3,15 @@ import { crearPedido } from '@/lib/firestore-admin';
 import { checkRateLimit, getClientIP } from '@/lib/rate-limit';
 import { calcularDespacho, calcularDescuento } from '@/lib/utils';
 import { PRECIOS } from '@/lib/types';
+import { logger } from '@/lib/logger';
 import type { Pedido, ItemPedido } from '@/lib/types';
 
 export async function POST(request: NextRequest) {
+  const start = Date.now();
   // Rate limit: 5 pedidos por IP por hora
   const ip = getClientIP(request);
   if (!checkRateLimit(ip, 5, 60 * 60_000)) {
+    logger.warn('Rate limit excedido en /api/order', { route: '/api/order', ip });
     return NextResponse.json(
       { error: 'Demasiados pedidos. Intenta nuevamente en una hora.' },
       { status: 429 },
@@ -76,17 +79,31 @@ export async function POST(request: NextRequest) {
 
     const id = await crearPedido(pedido);
 
+    logger.info('Pedido creado', {
+      route: '/api/order',
+      ip,
+      pedidoId: id,
+      total: totalCalculado,
+      items: itemsSanitizados.length,
+      durationMs: Date.now() - start,
+    });
+
     // Notificar al dueño de forma no bloqueante
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
     fetch(`${baseUrl}/api/notify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pedidoId: id, pedido }),
-    }).catch((err) => console.error('[order] Error notificando:', err));
+    }).catch((err) => logger.error('Error disparando notificación', { route: '/api/order', pedidoId: id, error: String(err) }));
 
     return NextResponse.json({ id, success: true }, { status: 201 });
   } catch (error) {
-    console.error('[order] Error creando pedido:', error);
+    logger.error('Error creando pedido', {
+      route: '/api/order',
+      ip,
+      error: error instanceof Error ? error.message : String(error),
+      durationMs: Date.now() - start,
+    });
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
 }
