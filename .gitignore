@@ -39,3 +39,9 @@ next-env.d.ts
 key.json
 .env.local
 .superpowers/
+
+# Claude Code worktrees (subagents)
+.claude/worktrees/
+
+# Misc uploads/temp
+*.zip
