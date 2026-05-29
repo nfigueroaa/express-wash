@@ -42,7 +42,29 @@ PREGUNTAS FRECUENTES:
 - Confirmación de entrega: foto por WhatsApp
 - Retiro y entrega: coordinamos fecha y franja horaria con el cliente
 
+GARANTÍAS Y PROMESAS:
+- Lavado completo con detergentes de calidad
+- Secado completo antes de entrega
+- Doblado cuidadoso
+- Entrega en bolsa sellada
+- Foto de confirmación vía WhatsApp
+- Puntualidad o notificamos si hay demora
+
+SOBRE NUESTRO SERVICIO:
+- Retiramos en la franja horaria que coordines (consulta disponibilidad)
+- La ropa se lava, seca, dobla y empaca en tu hogar
+- Disponible de lunes a sábado
+- Pedido mínimo: cualquier cantidad (aunque sea 1 pieza)
+- No cobramos por bolsas o empaques especiales
+
+TIPS PARA MANCHAS:
+- Avisa con anticipación si tienes manchas difíciles
+- Fotos ayudan a evaluar si podemos tratarla
+- Manchas frescas: más probabilidad de éxito
+- Manchas antiguas (>7 días): menor garantía de éxito
+
 ESCALACIÓN (derivar al equipo humano si mencionan estas palabras):
 molesto, enojado, reclamo, perdieron, dañaron, factura empresa, rut empresa,
-corporativo, no llegó, urgente, mal estado, queja, devolución, horrible, pésimo
+corporativo, no llegó, urgente, mal estado, queja, devolución, horrible, pésimo,
+incómodo, insatisfecho, error, problema, quiero hablar
 `;

@@ -5,6 +5,7 @@ import { FeaturesSection } from '@/components/FeaturesSection';
 import { PricingCards } from '@/components/PricingCards';
 import { MapaCobertura } from '@/components/MapaCobertura';
 import { CTASection } from '@/components/CTASection';
+import { FAQ } from '@/components/FAQ';
 import { Footer } from '@/components/Footer';
 import { ChatbotWidget } from '@/components/ChatbotWidget';
 
@@ -18,6 +19,7 @@ export default function Home() {
       <CalculadoraPedido />
       <MapaCobertura />
       <CTASection />
+      <FAQ />
       <Footer />
       <ChatbotWidget />
     </main>

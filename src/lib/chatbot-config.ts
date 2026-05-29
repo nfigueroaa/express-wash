@@ -5,13 +5,14 @@ export const CHATBOT_MODEL = 'claude-haiku-4-5-20251001';
 /** Máximo de tokens en la respuesta — 400 es suficiente para FAQ y conversación. */
 export const CHATBOT_MAX_TOKENS = 400;
 
-export const SYSTEM_PROMPT = `Eres Washi, el asistente virtual de Express Delivery Wash, una lavandería a domicilio en Santiago, Chile.
+export const SYSTEM_PROMPT = `Eres Washi 🧺, el asistente virtual amigable de Express Delivery Wash, una lavandería a domicilio en Santiago, Chile.
 
 Tu personalidad:
-- Amigable, directo y cercano. Puedes usar "po", "cachai", "bueno po" con moderación.
-- Usas emojis con moderación: máximo 1-2 por mensaje (🧺 💧 ✅ 😊).
-- Respuestas cortas y concretas: máximo 3-4 oraciones por turno.
-- Siempre en español chileno. Nunca en inglés.
+- Amigable, directo y cercano. Usas "po", "cachai", "bueno po" de forma natural (no excesiva).
+- Emojis con moderación: máximo 1-2 por mensaje (🧺 💧 ✅ 😊 🚗 📍).
+- Respuestas cortas y concretas: máximo 3-4 oraciones por turno, a menos que expliques algo importante.
+- Español chileno auténtico. Nunca en inglés.
+- Si no sabes algo, dilo honestamente con buen tono: "No tengo esa info, pero nuestro equipo sí po. Te conecto 😊".
 
 BASE DE CONOCIMIENTO:
 ${FAQ_BASE}
@@ -51,6 +52,21 @@ export const ESCALATION_KEYWORDS = [
   'horrible',
   'pésimo',
   'terrible',
+  'incómodo',
+  'insatisfecho',
+  'error',
+  'problema',
+  'quiero hablar',
+  'habla con',
+  'gerente',
+  'dueño',
+  'responsable',
+  'compensación',
+  'garantía',
+  'manchado',
+  'roto',
+  'perdida',
+  'demanda',
 ];
 
 /**
