@@ -1,5 +1,5 @@
 import * as admin from 'firebase-admin';
-import type { Pedido } from './types';
+import type { Pedido, NotificacionStatus } from './types';
 
 let _db: admin.firestore.Firestore | null = null;
 
@@ -72,6 +72,21 @@ export async function verificarAdmin(email: string): Promise<boolean> {
   if (!doc.exists) return false;
   const data = doc.data();
   return data?.activo !== false; // true si activo no está definido o es true
+}
+
+/**
+ * Actualiza el estado de la notificación de email en un pedido.
+ * Llamado desde /api/notify después de cada intento de envío.
+ */
+export async function actualizarNotificacionStatus(
+  id: string,
+  status: NotificacionStatus,
+): Promise<void> {
+  const db = getDb();
+  await db.collection('pedidos').doc(id).update({
+    notificacion_status: status,
+    actualizadoEn: new Date().toISOString(),
+  });
 }
 
 /**

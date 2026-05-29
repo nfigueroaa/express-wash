@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
       canal: body.canal || 'web',
       creadoEn: ahora,
       actualizadoEn: ahora,
+      notificacion_status: 'pending',
     };
 
     const id = await crearPedido(pedido);

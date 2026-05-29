@@ -1,5 +1,7 @@
 export type EstadoPedido = 'pendiente' | 'en_proceso' | 'listo' | 'entregado' | 'cancelado';
 
+export type NotificacionStatus = 'pending' | 'sent' | 'failed' | 'skipped';
+
 export interface ItemPedido {
   tipo: 'cubrecamas' | 'plumones' | 'colchas' | 'sabanas_ropa';
   cantidad: number;
@@ -24,6 +26,7 @@ export interface Pedido {
   canal?: string;
   creadoEn: string;
   actualizadoEn: string;
+  notificacion_status?: NotificacionStatus;
 }
 
 export interface ChatMessage {

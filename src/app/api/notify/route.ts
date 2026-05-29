@@ -1,10 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { formatCLP } from '@/lib/utils';
 import { checkRateLimit, getClientIP } from '@/lib/rate-limit';
+import { actualizarNotificacionStatus } from '@/lib/firestore-admin';
 import type { ItemPedido } from '@/lib/types';
 
+const MAX_INTENTOS = 3;
+const BACKOFF_BASE_MS = 500; // 500ms, 1000ms, 2000ms
+
+/**
+ * Envía un email via EmailJS con retry exponencial.
+ * Retorna true si el email se envió con éxito, false si falló todos los intentos.
+ */
+async function enviarEmailConRetry(payload: object): Promise<{ ok: boolean; intentos: number; error?: string }> {
+  let ultimoError = '';
+
+  for (let intento = 1; intento <= MAX_INTENTOS; intento++) {
+    try {
+      const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        console.log(`[notify] Email enviado en intento ${intento}`);
+        return { ok: true, intentos: intento };
+      }
+
+      ultimoError = `EmailJS ${res.status}: ${await res.text()}`;
+      console.warn(`[notify] Intento ${intento}/${MAX_INTENTOS} fallido — ${ultimoError}`);
+    } catch (err) {
+      ultimoError = err instanceof Error ? err.message : String(err);
+      console.warn(`[notify] Intento ${intento}/${MAX_INTENTOS} error — ${ultimoError}`);
+    }
+
+    // Backoff exponencial antes del próximo intento (no esperar después del último)
+    if (intento < MAX_INTENTOS) {
+      await new Promise((resolve) => setTimeout(resolve, BACKOFF_BASE_MS * Math.pow(2, intento - 1)));
+    }
+  }
+
+  return { ok: false, intentos: MAX_INTENTOS, error: ultimoError };
+}
+
 export async function POST(request: NextRequest) {
-  // Rate limit: 10 notificaciones por IP por hora (solo llamado internamente desde /api/order)
+  // Rate limit: 10 notificaciones por IP por hora (llamado internamente desde /api/order)
   const ip = getClientIP(request);
   if (!checkRateLimit(`notify:${ip}`, 10, 60 * 60_000)) {
     return NextResponse.json({ ok: false, error: 'Rate limit excedido' }, { status: 429 });
@@ -20,6 +60,10 @@ export async function POST(request: NextRequest) {
 
     if (!serviceId || !templateId || !publicKey || !ownerEmail) {
       console.warn('[notify] EmailJS no configurado — saltando notificación');
+      // Guardar status skipped en Firestore si tenemos el ID
+      if (pedidoId) {
+        await actualizarNotificacionStatus(pedidoId, 'skipped').catch(() => {});
+      }
       return NextResponse.json({ ok: true, skipped: true });
     }
 
@@ -55,19 +99,24 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+    const resultado = await enviarEmailConRetry(payload);
 
-    if (!res.ok) {
-      const text = await res.text();
-      console.error(`[notify] EmailJS error ${res.status}:`, text);
-      return NextResponse.json({ ok: false, error: `EmailJS: ${res.status}` }, { status: 500 });
+    // Actualizar status en Firestore
+    if (pedidoId) {
+      await actualizarNotificacionStatus(pedidoId, resultado.ok ? 'sent' : 'failed').catch((err) =>
+        console.error('[notify] Error actualizando notificacion_status:', err),
+      );
     }
 
-    return NextResponse.json({ ok: true });
+    if (!resultado.ok) {
+      console.error(`[notify] Todos los intentos fallaron — ${resultado.error}`);
+      return NextResponse.json(
+        { ok: false, error: resultado.error, intentos: resultado.intentos },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json({ ok: true, intentos: resultado.intentos });
   } catch (error) {
     console.error('[notify] Error enviando notificación:', error);
     return NextResponse.json({ ok: false, error: 'Error interno' }, { status: 500 });
