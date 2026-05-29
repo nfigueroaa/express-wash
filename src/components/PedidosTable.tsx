@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { formatCLP } from '@/lib/utils';
 import type { Pedido, EstadoPedido, NotificacionStatus } from '@/lib/types';
 
@@ -37,10 +37,31 @@ const ESTADO_COLORES: Record<EstadoPedido, string> = {
   cancelado: 'bg-red-500/20 text-red-400 border-red-500/30',
 };
 
+type RangoFecha = 'hoy' | 'semana' | 'mes' | 'todos';
+
+function esDentroDeRango(fechaStr: string, rango: RangoFecha): boolean {
+  if (rango === 'todos') return true;
+  const fecha = new Date(fechaStr);
+  const ahora = new Date();
+  const inicioHoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+  if (rango === 'hoy') return fecha >= inicioHoy;
+  if (rango === 'semana') {
+    const inicioSemana = new Date(inicioHoy);
+    inicioSemana.setDate(inicioHoy.getDate() - inicioHoy.getDay());
+    return fecha >= inicioSemana;
+  }
+  if (rango === 'mes') {
+    const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+    return fecha >= inicioMes;
+  }
+  return true;
+}
+
 export function PedidosTable() {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtroEstado, setFiltroEstado] = useState<EstadoPedido | 'todos'>('todos');
+  const [filtroFecha, setFiltroFecha] = useState<RangoFecha>('todos');
 
   const cargar = useCallback(async () => {
     setLoading(true);
@@ -63,10 +84,13 @@ export function PedidosTable() {
     cargar();
   };
 
-  const pedidosFiltrados =
-    filtroEstado === 'todos'
-      ? pedidos
-      : pedidos.filter((p) => p.estado === filtroEstado);
+  const pedidosFiltrados = useMemo(() => {
+    return pedidos.filter((p) => {
+      const estadoOk = filtroEstado === 'todos' || p.estado === filtroEstado;
+      const fechaOk = esDentroDeRango(p.creadoEn, filtroFecha);
+      return estadoOk && fechaOk;
+    });
+  }, [pedidos, filtroEstado, filtroFecha]);
 
   if (loading) {
     return (
@@ -79,7 +103,7 @@ export function PedidosTable() {
   return (
     <div>
       {/* Filtros */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex flex-wrap gap-2 mb-3">
         {(['todos', ...ESTADOS] as const).map((estado) => (
           <button
             key={estado}
@@ -99,6 +123,29 @@ export function PedidosTable() {
         >
           ↻ Actualizar
         </button>
+      </div>
+
+      {/* Filtro por fecha */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        <span className="text-xs text-gray-600 self-center mr-1">Período:</span>
+        {(['todos', 'hoy', 'semana', 'mes'] as const).map((rango) => {
+          const labels: Record<RangoFecha, string> = {
+            todos: 'Todos', hoy: 'Hoy', semana: 'Esta semana', mes: 'Este mes',
+          };
+          return (
+            <button
+              key={rango}
+              onClick={() => setFiltroFecha(rango)}
+              className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                filtroFecha === rango
+                  ? 'bg-indigo-600 text-white border-indigo-600'
+                  : 'bg-gray-800 text-gray-400 border-gray-700 hover:border-gray-500'
+              }`}
+            >
+              {labels[rango]}
+            </button>
+          );
+        })}
       </div>
 
       {/* Tabla */}

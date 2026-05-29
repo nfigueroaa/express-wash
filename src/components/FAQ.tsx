@@ -56,11 +56,47 @@ const FAQ_ITEMS = [
     answer:
       'Enviamos una foto por WhatsApp cuando entregamos tu ropa limpia en tu domicilio. También te confirmaremos por el mismo medio cuando la retiremos.',
   },
+  {
+    id: 'stain-types',
+    question: '¿Qué manchas tienen más probabilidad de salir?',
+    answer:
+      'Las manchas frescas (menos de 24 horas) tienen mayor tasa de éxito: café, barro, sudor, comida en general. Las manchas antiguas o de aceite, vino tinto, sangre seca y grasa de cocina son las más difíciles. Si tienes dudas, mándanos una foto antes de pedir para darte una evaluación honesta.',
+  },
+  {
+    id: 'stain-pretreat',
+    question: '¿Debo pre-tratar las manchas antes de enviar?',
+    answer:
+      'No es necesario, pero ayuda. Si la mancha es reciente, puedes poner agua fría (no caliente) sobre ella antes de enviar. Nunca la frotes con fuerza: eso puede fijarla más. Cuéntanos en el formulario qué tipo de mancha es para que podamos tratarla correctamente.',
+  },
+  {
+    id: 'cancel-late',
+    question: '¿Qué pasa si necesito cancelar con menos de 1 hora?',
+    answer:
+      'Si el retiro ya está muy cerca o ya retiramos la ropa, habla directamente con nuestro equipo. Evaluamos caso a caso y buscamos una solución. No dejamos a nadie colgado sin conversar primero.',
+  },
+  {
+    id: 'reschedule',
+    question: '¿Puedo cambiar la fecha o franja horaria de retiro?',
+    answer:
+      'Sí, coordínalo directamente vía WhatsApp lo antes posible. Si aún no retiramos tu ropa, podemos reagendar sin problema. La disponibilidad de franjas depende de la agenda del día.',
+  },
+  {
+    id: 'minimum',
+    question: '¿Hay un mínimo de prendas o peso?',
+    answer:
+      'No hay mínimo. Puedes pedir aunque sea un cubrecamas o un par de kilos de ropa. Eso sí, recuerda que el despacho es gratis solo sobre $30.000, por lo que pedidos pequeños tendrán costo de envío.',
+  },
+  {
+    id: 'damage',
+    question: '¿Qué pasa si mi ropa llega dañada?',
+    answer:
+      'Tomamos fotos antes y durante el proceso. Si hay algún inconveniente con el estado de una prenda, comunícate con nuestro equipo de inmediato. Evaluamos responsabilidades y buscamos una solución. Tu satisfacción y confianza son lo más importante.',
+  },
 ];
 
 export function FAQ() {
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-transparent via-indigo-950/10 to-transparent">
+    <section id="faq" className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-transparent via-indigo-950/10 to-transparent">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
