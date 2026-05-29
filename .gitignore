@@ -35,14 +35,28 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Secrets
-key.json
+# ============================================================
+# SECRETS — nunca en git
+# ============================================================
 .env.local
-.superpowers/
+.env.*.local
+.env.production
+.env.staging
 
-# Claude Code — ignorar todo excepto lo necesario
+# Firebase credentials
+key.json
+serviceAccount*.json
+firebase-adminsdk*.json
+*.pem
+*.p12
+*.pfx
+
+# Claude Code — settings locales y worktrees de subagentes
 .claude/settings.local.json
 .claude/worktrees/
+
+# Otros
+.superpowers/
 
 # Misc uploads/temp
 *.zip
