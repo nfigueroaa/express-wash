@@ -73,17 +73,16 @@ export function FAQ() {
         </div>
 
         {/* Accordion */}
-        <Accordion type="single" collapsible className="w-full space-y-2">
+        <Accordion className="w-full space-y-2">
           {FAQ_ITEMS.map((item) => (
             <AccordionItem
               key={item.id}
-              value={item.id}
               className="border border-indigo-500/30 rounded-lg px-4 bg-indigo-950/20 hover:bg-indigo-950/40 transition-colors"
             >
               <AccordionTrigger className="text-indigo-100 hover:text-indigo-300 font-semibold py-4">
                 {item.question}
               </AccordionTrigger>
-              <AccordionContent className="text-indigo-200/90 leading-relaxed pt-2">
+              <AccordionContent className="text-indigo-200/90 leading-relaxed pt-2 pb-4">
                 {item.answer}
               </AccordionContent>
             </AccordionItem>
