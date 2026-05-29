@@ -3,6 +3,7 @@ import { formatCLP } from '@/lib/utils';
 import { checkRateLimit, getClientIP } from '@/lib/rate-limit';
 import { actualizarNotificacionStatus } from '@/lib/firestore-admin';
 import { logger } from '@/lib/logger';
+import { decrypt, isEncrypted } from '@/lib/crypto';
 import type { ItemPedido } from '@/lib/types';
 
 const MAX_INTENTOS = 3;
@@ -68,14 +69,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, skipped: true });
     }
 
+    // Descifrar teléfono si está encriptado (retrocompatible con pedidos sin cifrar)
+    const telefonoPlano = isEncrypted(pedido.telefono)
+      ? (decrypt(pedido.telefono) ?? pedido.telefono)
+      : pedido.telefono;
+
     // Formatear lista de items
     const itemsTexto = (pedido.items as ItemPedido[])
       .map((item) => `${item.cantidad}x ${item.tipo}: ${formatCLP(item.precioUnitario * item.cantidad)}`)
       .join('\n');
 
     // Generar link de WhatsApp hacia el cliente (si proporcionó teléfono)
-    const whatsappLink = pedido.telefono
-      ? `https://wa.me/56${pedido.telefono.replace(/\D/g, '')}?text=${encodeURIComponent(
+    const whatsappLink = telefonoPlano
+      ? `https://wa.me/56${telefonoPlano.replace(/\D/g, '')}?text=${encodeURIComponent(
           `Hola ${pedido.nombre}! Tu pedido #${pedidoId?.slice(-6)?.toUpperCase()} de Express Delivery Wash está confirmado 🧺`,
         )}`
       : 'No disponible (sin teléfono)';
@@ -88,7 +94,7 @@ export async function POST(request: NextRequest) {
         to_email: ownerEmail,
         pedido_id: pedidoId?.slice(-6)?.toUpperCase() || pedidoId,
         customer_name: pedido.nombre,
-        customer_phone: pedido.telefono || 'No proporcionado',
+        customer_phone: telefonoPlano || 'No proporcionado',
         address: pedido.direccion,
         items: itemsTexto,
         subtotal: formatCLP(pedido.subtotal || 0),

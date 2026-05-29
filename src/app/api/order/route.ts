@@ -4,6 +4,7 @@ import { checkRateLimit, getClientIP } from '@/lib/rate-limit';
 import { calcularDespacho, calcularDescuento } from '@/lib/utils';
 import { PRECIOS } from '@/lib/types';
 import { logger } from '@/lib/logger';
+import { encrypt } from '@/lib/crypto';
 import type { Pedido, ItemPedido } from '@/lib/types';
 
 export async function POST(request: NextRequest) {
@@ -57,9 +58,11 @@ export async function POST(request: NextRequest) {
 
     const ahora = new Date().toISOString();
 
+    const telefonoRaw = body.telefono?.trim() || '';
+
     const pedido: Omit<Pedido, 'id'> = {
       nombre: body.nombre.trim(),
-      telefono: body.telefono?.trim() || '',
+      telefono: encrypt(telefonoRaw) ?? telefonoRaw, // AES-256-GCM cifrado
       direccion: body.direccion.trim(),
       lat: body.lat,
       lon: body.lon,
