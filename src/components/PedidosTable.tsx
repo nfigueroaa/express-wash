@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { formatCLP } from '@/lib/utils';
-import type { Pedido, EstadoPedido } from '@/lib/types';
+import type { Pedido, EstadoPedido, NotificacionStatus } from '@/lib/types';
 
 // Funciones helper para llamar a los endpoints
 async function obtenerPedidos(): Promise<Pedido[]> {
@@ -21,6 +21,13 @@ async function actualizarEstadoPedido(id: string, estado: EstadoPedido): Promise
 }
 
 const ESTADOS: EstadoPedido[] = ['pendiente', 'en_proceso', 'listo', 'entregado', 'cancelado'];
+
+const NOTIF_ICON: Record<NotificacionStatus, { icon: string; label: string; color: string }> = {
+  pending: { icon: '⏳', label: 'Pendiente', color: 'text-yellow-500' },
+  sent:    { icon: '✅', label: 'Enviado',   color: 'text-green-400' },
+  failed:  { icon: '❌', label: 'Falló',     color: 'text-red-400' },
+  skipped: { icon: '➖', label: 'Omitido',   color: 'text-gray-500' },
+};
 
 const ESTADO_COLORES: Record<EstadoPedido, string> = {
   pendiente: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
@@ -104,6 +111,7 @@ export function PedidosTable() {
               <th className="px-4 py-3">Items</th>
               <th className="px-4 py-3">Total</th>
               <th className="px-4 py-3">Estado</th>
+              <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Fecha</th>
               <th className="px-4 py-3">Acción</th>
             </tr>
@@ -142,6 +150,21 @@ export function PedidosTable() {
                     }`}
                   >
                     {p.estado}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-center" title={
+                  p.notificacion_status
+                    ? NOTIF_ICON[p.notificacion_status].label
+                    : 'Sin estado'
+                }>
+                  <span className={`text-base ${
+                    p.notificacion_status
+                      ? NOTIF_ICON[p.notificacion_status].color
+                      : 'text-gray-700'
+                  }`}>
+                    {p.notificacion_status
+                      ? NOTIF_ICON[p.notificacion_status].icon
+                      : '–'}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-gray-500 text-xs">
