@@ -8,7 +8,7 @@ let _db: admin.firestore.Firestore | null = null;
  * En Cloud Run, esto usa automáticamente las credenciales del servicio.
  * En desarrollo local, requiere GOOGLE_APPLICATION_CREDENTIALS.
  */
-function getDb(): admin.firestore.Firestore {
+export function getDb(): admin.firestore.Firestore {
   if (_db) return _db;
 
   // Inicializar Admin SDK si no está hecho
