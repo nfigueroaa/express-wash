@@ -15,8 +15,6 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
 
   const handleGoogleLogin = async () => {
-    // Debe llamarse directamente desde el click del botón para que el navegador
-    // permita el popup (no desde useEffect ni async chains ajenas al evento).
     setLoading(true);
     setError(null);
 
@@ -24,9 +22,8 @@ export default function LoginPage() {
       const auth = getAuth();
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-
-      // Obtener ID token e intercambiar por session cookie HttpOnly
       const idToken = await result.user.getIdToken();
+
       const res = await fetch('/api/auth/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -34,31 +31,19 @@ export default function LoginPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
+        const data = await res.json();
         setError(data.error || 'No tienes acceso. Contacta al administrador.');
         setLoading(false);
         return;
       }
 
-      // Full page navigation — garantiza que la cookie httpOnly se envíe
+      // Full page navigation — garantiza que la cookie se envíe
       window.location.href = '/admin';
     } catch (err: unknown) {
-      const code = (err as { code?: string }).code;
-
-      if (code === 'auth/popup-blocked') {
-        setError(
-          'Tu navegador bloqueó el popup. Permite popups para este sitio en la barra de URL e intenta de nuevo.',
-        );
-      } else if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
-        // El usuario cerró el popup — no es un error
-        setError(null);
-      } else if (code === 'auth/unauthorized-domain') {
-        setError(
-          'Dominio no autorizado en Firebase. Contacta al administrador del sistema.',
-        );
+      if (err instanceof Error && err.message.includes('popup')) {
+        setError('Permite popups para este sitio e intenta nuevamente.');
       } else {
         setError('Error al iniciar sesión. Intenta nuevamente.');
-        console.error('[login] signInWithPopup error:', err);
       }
       setLoading(false);
     }
