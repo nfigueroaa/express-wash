@@ -1,5 +1,5 @@
 import * as admin from 'firebase-admin';
-import { verificarAdmin } from './firestore-admin';
+
 import type { UsuarioAdmin } from './types';
 
 /**
