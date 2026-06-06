@@ -37,7 +37,7 @@ const nextConfig = {
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https://images.unsplash.com https://*.tile.openstreetmap.org https://lh3.googleusercontent.com",
               "connect-src 'self' https://api.anthropic.com https://api.emailjs.com https://nominatim.openstreetmap.org https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.firebaseapp.com",
-              "frame-src 'none'",
+              "frame-src 'self' https://*.firebaseapp.com",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
