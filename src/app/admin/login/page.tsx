@@ -1,9 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithRedirect,
+  getRedirectResult,
+} from 'firebase/auth';
 
 // Inicializar Firebase Client SDK (reutiliza si ya fue inicializado)
 const firebaseConfig = JSON.parse(process.env.NEXT_PUBLIC_FIREBASE_CONFIG!);
@@ -13,40 +18,54 @@ if (!getApps().length) {
 
 export default function LoginPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // true al inicio para capturar redirect result
   const [error, setError] = useState<string | null>(null);
+
+  // Al montar, verificar si venimos de un redirect de Google
+  useEffect(() => {
+    const auth = getAuth();
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (!result) {
+          // No hay resultado de redirect — primera carga normal
+          setLoading(false);
+          return;
+        }
+        // Tenemos resultado del redirect de Google
+        const idToken = await result.user.getIdToken();
+        const res = await fetch('/api/auth/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          setError(data.error || 'No tienes acceso. Contacta al administrador.');
+          setLoading(false);
+          return;
+        }
+
+        router.push('/admin');
+        router.refresh();
+      })
+      .catch((err) => {
+        console.error('[login] Error en getRedirectResult:', err);
+        setError('Error al iniciar sesión. Intenta nuevamente.');
+        setLoading(false);
+      });
+  }, [router]);
 
   const handleGoogleLogin = async () => {
     setLoading(true);
     setError(null);
-
     try {
       const auth = getAuth();
       const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const idToken = await result.user.getIdToken();
-
-      const res = await fetch('/api/auth/session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || 'No tienes acceso. Contacta al administrador.');
-        return;
-      }
-
-      router.push('/admin');
-      router.refresh();
-    } catch (err: unknown) {
-      if (err instanceof Error && err.message.includes('popup')) {
-        setError('Permite popups para este sitio e intenta nuevamente.');
-      } else {
-        setError('Error al iniciar sesión. Intenta nuevamente.');
-      }
-    } finally {
+      await signInWithRedirect(auth, provider);
+      // La página se redirige a Google — el resultado se procesa en el useEffect al volver
+    } catch {
+      setError('Error al iniciar sesión. Intenta nuevamente.');
       setLoading(false);
     }
   };
