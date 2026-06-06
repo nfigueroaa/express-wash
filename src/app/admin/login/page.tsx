@@ -1,13 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { initializeApp, getApps } from 'firebase/app';
-import {
-  getAuth,
-  GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
-} from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
 // Inicializar Firebase Client SDK (reutiliza si ya fue inicializado)
 const firebaseConfig = JSON.parse(process.env.NEXT_PUBLIC_FIREBASE_CONFIG!);
@@ -16,54 +11,55 @@ if (!getApps().length) {
 }
 
 export default function LoginPage() {
-  const [loading, setLoading] = useState(true); // true al inicio para capturar redirect result
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Al montar, verificar si venimos de un redirect de Google
-  useEffect(() => {
-    const auth = getAuth();
-    getRedirectResult(auth)
-      .then(async (result) => {
-        if (!result) {
-          // No hay resultado de redirect — primera carga normal
-          setLoading(false);
-          return;
-        }
-        // Tenemos resultado del redirect de Google
-        const idToken = await result.user.getIdToken();
-        const res = await fetch('/api/auth/session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ idToken }),
-        });
-
-        if (!res.ok) {
-          const data = await res.json();
-          setError(data.error || 'No tienes acceso. Contacta al administrador.');
-          setLoading(false);
-          return;
-        }
-
-        // Full page navigation — garantiza que la cookie se envíe con el primer request
-        window.location.href = '/admin';
-      })
-      .catch((err) => {
-        console.error('[login] Error en getRedirectResult:', err);
-        setError('Error al iniciar sesión. Intenta nuevamente.');
-        setLoading(false);
-      });
-  }, []);
-
   const handleGoogleLogin = async () => {
+    // Debe llamarse directamente desde el click del botón para que el navegador
+    // permita el popup (no desde useEffect ni async chains ajenas al evento).
     setLoading(true);
     setError(null);
+
     try {
       const auth = getAuth();
       const provider = new GoogleAuthProvider();
-      await signInWithRedirect(auth, provider);
-      // La página se redirige a Google — el resultado se procesa en el useEffect al volver
-    } catch {
-      setError('Error al iniciar sesión. Intenta nuevamente.');
+      const result = await signInWithPopup(auth, provider);
+
+      // Obtener ID token e intercambiar por session cookie HttpOnly
+      const idToken = await result.user.getIdToken();
+      const res = await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || 'No tienes acceso. Contacta al administrador.');
+        setLoading(false);
+        return;
+      }
+
+      // Full page navigation — garantiza que la cookie httpOnly se envíe
+      window.location.href = '/admin';
+    } catch (err: unknown) {
+      const code = (err as { code?: string }).code;
+
+      if (code === 'auth/popup-blocked') {
+        setError(
+          'Tu navegador bloqueó el popup. Permite popups para este sitio en la barra de URL e intenta de nuevo.',
+        );
+      } else if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+        // El usuario cerró el popup — no es un error
+        setError(null);
+      } else if (code === 'auth/unauthorized-domain') {
+        setError(
+          'Dominio no autorizado en Firebase. Contacta al administrador del sistema.',
+        );
+      } else {
+        setError('Error al iniciar sesión. Intenta nuevamente.');
+        console.error('[login] signInWithPopup error:', err);
+      }
       setLoading(false);
     }
   };
