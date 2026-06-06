@@ -35,7 +35,9 @@ export async function POST(request: NextRequest) {
 
     // Verificar que el email está en la lista de admins
     const esAdmin = await verificarAdmin(decoded.email);
+    console.log(`[auth/session] Email: ${decoded.email}, esAdmin: ${esAdmin}`);
     if (!esAdmin) {
+      console.log(`[auth/session] Acceso denegado para ${decoded.email}`);
       return NextResponse.json(
         { error: 'No tienes acceso. Contacta al administrador.' },
         { status: 403 },
