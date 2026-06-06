@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { initializeApp, getApps } from 'firebase/app';
 import {
   getAuth,
@@ -17,7 +16,6 @@ if (!getApps().length) {
 }
 
 export default function LoginPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(true); // true al inicio para capturar redirect result
   const [error, setError] = useState<string | null>(null);
 
@@ -46,15 +44,15 @@ export default function LoginPage() {
           return;
         }
 
-        router.push('/admin');
-        router.refresh();
+        // Full page navigation — garantiza que la cookie se envíe con el primer request
+        window.location.href = '/admin';
       })
       .catch((err) => {
         console.error('[login] Error en getRedirectResult:', err);
         setError('Error al iniciar sesión. Intenta nuevamente.');
         setLoading(false);
       });
-  }, [router]);
+  }, []);
 
   const handleGoogleLogin = async () => {
     setLoading(true);

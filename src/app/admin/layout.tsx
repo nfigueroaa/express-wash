@@ -35,7 +35,7 @@ export default async function AdminLayout({
   }
 
   return (
-    <RoleGuard requiredRole="operario">
+    <RoleGuard requiredRole="operario" userRole={usuario.role}>
       <div
         className="flex min-h-screen"
         style={{ backgroundColor: 'var(--indigo-bg)' }}

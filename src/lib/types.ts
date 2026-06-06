@@ -68,4 +68,5 @@ export interface UsuarioAdmin {
   email: string;
   nombre: string;
   foto?: string;
+  role: 'admin' | 'supervisor' | 'operario';
 }

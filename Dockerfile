@@ -2,7 +2,7 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN npm ci && npm install sharp
 
 # Stage 2: Build de la aplicación
 FROM node:20-alpine AS builder

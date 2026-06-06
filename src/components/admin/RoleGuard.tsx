@@ -6,16 +6,29 @@ export interface RoleGuardProps {
   children: React.ReactNode;
   requiredRole?: 'admin' | 'supervisor' | 'operario';
   fallback?: React.ReactNode;
+  /** Si se provee, evita el fetch a /api/admin/validate-role (ya verificado en el layout). */
+  userRole?: 'admin' | 'supervisor' | 'operario';
 }
+
+const ROLE_HIERARCHY = { admin: 3, supervisor: 2, operario: 1 } as const;
 
 export function RoleGuard({
   children,
   requiredRole = 'operario',
   fallback,
+  userRole,
 }: RoleGuardProps) {
-  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(
+    // Si ya tenemos el rol del layout, evaluamos inmediatamente sin fetch
+    userRole != null
+      ? (ROLE_HIERARCHY[userRole] || 0) >= (ROLE_HIERARCHY[requiredRole] || 1)
+      : null,
+  );
 
   useEffect(() => {
+    // Si el rol ya fue provisto desde el servidor, no necesitamos el fetch
+    if (userRole != null) return;
+
     async function checkRole() {
       try {
         const response = await fetch('/api/admin/validate-role', {
@@ -29,17 +42,9 @@ export function RoleGuard({
         }
 
         const { role } = await response.json();
-
-        // Role hierarchy: admin > supervisor > operario
-        const roleHierarchy = { admin: 3, supervisor: 2, operario: 1 };
-        const userLevel = roleHierarchy[role as keyof typeof roleHierarchy] || 0;
-        const requiredLevel = roleHierarchy[requiredRole] || 1;
-
-        if (userLevel >= requiredLevel) {
-          setIsAuthorized(true);
-        } else {
-          setIsAuthorized(false);
-        }
+        const userLevel = ROLE_HIERARCHY[role as keyof typeof ROLE_HIERARCHY] || 0;
+        const requiredLevel = ROLE_HIERARCHY[requiredRole] || 1;
+        setIsAuthorized(userLevel >= requiredLevel);
       } catch (error) {
         console.error('Role validation error:', error);
         setIsAuthorized(false);
@@ -47,7 +52,7 @@ export function RoleGuard({
     }
 
     checkRole();
-  }, [requiredRole]);
+  }, [requiredRole, userRole]);
 
   if (isAuthorized === null) {
     return (

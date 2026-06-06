@@ -15,19 +15,24 @@ export async function verifySessionCookie(
       admin.initializeApp({ projectId: 'expresswash-prod-202605112332' });
     }
 
-    // Verifica la cookie (checkRevoked: true revoca sesiones de usuarios eliminados)
-    const decoded = await admin.auth().verifySessionCookie(sessionCookie, true);
+    // Verifica la cookie (checkRevoked: false para mayor velocidad — panel interno)
+    const decoded = await admin.auth().verifySessionCookie(sessionCookie, false);
 
     if (!decoded.email) return null;
 
-    // Verifica que el email está en la lista de admins
-    const esAdmin = await verificarAdmin(decoded.email);
-    if (!esAdmin) return null;
+    // Obtener datos del admin (verifica acceso + rol en una sola llamada a Firestore)
+    const db = admin.firestore();
+    const adminDoc = await db.collection('admins').doc(decoded.email).get();
+    if (!adminDoc.exists) return null;
+
+    const adminData = adminDoc.data();
+    const role = (adminData?.role as 'admin' | 'supervisor' | 'operario') || 'operario';
 
     return {
       email: decoded.email,
       nombre: decoded.name || decoded.email,
       foto: decoded.picture,
+      role,
     };
   } catch {
     return null;
