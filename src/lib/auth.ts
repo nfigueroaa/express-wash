@@ -1,5 +1,5 @@
 import * as admin from 'firebase-admin';
-
+import { verificarAdmin, getDb } from './firestore-admin';
 import type { UsuarioAdmin } from './types';
 
 /**
@@ -15,18 +15,19 @@ export async function verifySessionCookie(
       admin.initializeApp({ projectId: 'expresswash-prod-202605112332' });
     }
 
-    // Verifica la cookie (checkRevoked: false para mayor velocidad — panel interno)
+    // Verifica la cookie criptográficamente (sin llamada de red extra)
     const decoded = await admin.auth().verifySessionCookie(sessionCookie, false);
 
     if (!decoded.email) return null;
 
-    // Obtener datos del admin (verifica acceso + rol en una sola llamada a Firestore)
-    const db = admin.firestore();
-    const adminDoc = await db.collection('admins').doc(decoded.email).get();
-    if (!adminDoc.exists) return null;
+    // Verifica que el email está en la lista de admins (usa el mismo path que antes)
+    const esAdmin = await verificarAdmin(decoded.email);
+    if (!esAdmin) return null;
 
-    const adminData = adminDoc.data();
-    const role = (adminData?.role as 'admin' | 'supervisor' | 'operario') || 'operario';
+    // Obtener el rol (campo opcional — default: operario)
+    const db = getDb();
+    const adminDoc = await db.collection('admins').doc(decoded.email).get();
+    const role = (adminDoc.data()?.role as 'admin' | 'supervisor' | 'operario') || 'operario';
 
     return {
       email: decoded.email,
@@ -34,7 +35,8 @@ export async function verifySessionCookie(
       foto: decoded.picture,
       role,
     };
-  } catch {
+  } catch (err) {
+    console.error('[auth] verifySessionCookie error:', err instanceof Error ? err.message : err);
     return null;
   }
 }
@@ -47,23 +49,16 @@ export async function getUserRole(
   session: string,
 ): Promise<'admin' | 'supervisor' | 'operario' | null> {
   try {
-    // Reutiliza la inicialización de firestore-admin si ya ocurrió
     if (!admin.apps.length) {
       admin.initializeApp({ projectId: 'expresswash-prod-202605112332' });
     }
 
-    const decodedToken = await admin.auth().verifySessionCookie(session);
+    const decodedToken = await admin.auth().verifySessionCookie(session, false);
     if (!decodedToken.email) return null;
 
-    // La colección 'admins' usa el email como ID de documento (consistente con verificarAdmin)
-    const userDoc = await admin
-      .firestore()
-      .collection('admins')
-      .doc(decodedToken.email)
-      .get();
-
-    const userData = userDoc.data();
-    return userData?.role || 'operario'; // Default to operario if not specified
+    const db = getDb();
+    const userDoc = await db.collection('admins').doc(decodedToken.email).get();
+    return (userDoc.data()?.role as 'admin' | 'supervisor' | 'operario') || 'operario';
   } catch {
     return null;
   }
