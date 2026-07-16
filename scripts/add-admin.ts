@@ -3,7 +3,7 @@
 /**
  * Agrega un email como admin en Firestore.
  * Uso: npx ts-node scripts/add-admin.ts <email> [role]
- * Ejemplo: npx ts-node scripts/add-admin.ts darkevilwolf@gmail.com admin
+ * Ejemplo: npx ts-node scripts/add-admin.ts admin@example.com admin
  */
 
 import * as admin from 'firebase-admin';

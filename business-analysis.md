@@ -142,7 +142,7 @@ Bot/Humano: "Perfecto! Necesito: nombre, dirección y cuándo retiramos 📅"
 
 ### 6.1 Problema identificado
 
-El número +56942749703 y +56994077513 son números personales.
+El número +56900000001 y +56900000002 son números personales.
 **No deben exponerse como canal de negocio principal.**
 
 ### 6.2 Opciones recomendadas (orden de preferencia)
